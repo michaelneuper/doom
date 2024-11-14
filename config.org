@@ -85,3 +85,15 @@
   (setq doom-modeline-enable-word-count nil
         doom-modeline-major-mode-icon t))
 #+end_src
+** :emacs
+*** dired
+#+begin_src emacs-lisp
+(after! dirvish
+  (setq! dirvish-quick-access-entries
+         `(("h" "~/"           "Home")
+           ("e" ,doom-user-dir "Doom config")
+           ("c" "~/Developer/" "Code")
+           ("d" "~/Downloads/" "Downloads")
+           ("g" "~/GitHub/"    "GitHub")
+           ("t" "~/.Trash/"    "Trash"))))
+#+end_src

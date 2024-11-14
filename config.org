@@ -1,0 +1,2 @@
+#+title: Doom Emacs Config
+#+author: Michael Neuper

@@ -79,3 +79,9 @@
 
 (setq +doom-dashboard-ascii-banner-fn #'my-weebery-is-always-greater)
 #+end_src
+*** modeline
+#+begin_src emacs-lisp
+(after! doom-modeline
+  (setq doom-modeline-enable-word-count nil
+        doom-modeline-major-mode-icon t))
+#+end_src

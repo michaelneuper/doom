@@ -53,6 +53,14 @@
       doom-localleader-alt-key "M-SPC l")
 #+end_src
 * Doom
+** :completion
+*** corfu
+#+begin_src emacs-lisp
+(after! corfu
+  (setq corfu-auto nil
+        corfu-preselect 'first
+        +corfu-want-tab-prefer-expand-snippets t))
+#+end_src
 ** :ui
 *** doom-dashboard
 #+begin_src emacs-lisp

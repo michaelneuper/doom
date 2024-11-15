@@ -97,3 +97,18 @@
            ("g" "~/GitHub/"    "GitHub")
            ("t" "~/.Trash/"    "Trash"))))
 #+end_src
+** :lang
+*** latex
+#+begin_src emacs-lisp
+; use cdlatex completion instead of yasnippet
+(map! :map cdlatex-mode-map
+      :i "TAB" #'cdlatex-tab)
+
+(map! :after latex
+      :map cdlatex-mode-map
+      :localleader
+      :desc "Insert math symbol"
+      "i" #'cdlatex-math-symbol
+      :desc "Begin environment"
+      "e" #'cdlatex-environment)
+#+end_src

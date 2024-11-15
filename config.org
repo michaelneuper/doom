@@ -27,6 +27,9 @@
 ; column fill indicator
 (setq display-fill-column-indicator-column 80)
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
+
+(pixel-scroll-precision-mode 1)
+
 #+end_src
 ** Doom
 #+begin_src emacs-lisp

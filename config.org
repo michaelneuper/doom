@@ -1,6 +1,16 @@
 #+title: Doom Emacs Config
 #+author: Michael Neuper
 
+* Contents :toc:
+- [[#basic][Basic]]
+  - [[#emacs][Emacs]]
+  - [[#doom][Doom]]
+- [[#doom-1][Doom]]
+  - [[#completion][:completion]]
+  - [[#ui][:ui]]
+  - [[#emacs-1][:emacs]]
+  - [[#lang][:lang]]
+
 * Basic
 ** Emacs
 #+begin_src emacs-lisp

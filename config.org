@@ -46,7 +46,8 @@
 (setq doom-theme 'doom-gruvbox)
 
 ;; FONTS
-(setq doom-font (font-spec :family "Cascadia Code" :size 15.5))
+(setq doom-font (font-spec :family "Menlo" :size 15.5)
+      doom-symbol-font (font-spec :family "Cascadia Code" :size 15.5))
 
 ; remap <localleader> from SPC m to SPC l
 (setq doom-localleader-key "SPC l"

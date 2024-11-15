@@ -30,6 +30,15 @@
 
 (pixel-scroll-precision-mode 1)
 
+; make emacs faster
+(use-package! gcmh
+  :init
+  (setq gcmh-idle-delay 5
+        gcmh-high-cons-threshold (* 256 1024 1024))  ; 256MB during idle
+  :config
+  (gcmh-mode 1))
+
+(setq gc-cons-threshold 200000000) ; previous 33554432
 #+end_src
 ** Doom
 #+begin_src emacs-lisp

@@ -61,6 +61,16 @@
         corfu-preselect 'first
         +corfu-want-tab-prefer-expand-snippets t))
 #+end_src
+*** copilot
+#+begin_src emacs-lisp
+(after! (evil copilot)
+  (evil-define-key 'insert 'global (kbd "<tab>") 'copilot-accept-completion))
+
+(map! :leader
+      (:prefix "t"
+       :desc "Copilot"
+       "c" #'copilot-mode))
+#+end_src
 ** :ui
 *** doom-dashboard
 #+begin_src emacs-lisp

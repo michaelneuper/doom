@@ -33,6 +33,9 @@
 
 ; line numbers
 (setq display-line-numbers-type 'visual)
+(custom-set-faces! ; don't make line numbers italic
+  '(line-number :slant normal)
+  '(line-number-current-line :slant normal))
 
 ; column fill indicator
 (setq display-fill-column-indicator-column 80)
@@ -56,7 +59,7 @@
 (setq doom-theme 'doom-gruvbox)
 
 ;; FONTS
-(setq doom-font (font-spec :family "Menlo" :size 15.5)
+(setq doom-font (font-spec :family "SF Mono" :size 15.5)
       doom-symbol-font (font-spec :family "Cascadia Code" :size 15.5))
 
 ; remap <localleader> from SPC m to SPC l

@@ -139,6 +139,16 @@
            ("t" "~/.Trash/"    "Trash"))))
 #+end_src
 ** :lang
+*** cc
+#+begin_src emacs-lisp
+(after! cc-mode
+  (setq c-basic-offset 2))
+#+end_src
+*** java
+#+begin_src emacs-lisp
+(after! java-mode
+  (setq c-basic-offset 2))
+#+end_src
 *** latex
 #+begin_src emacs-lisp
 ; use cdlatex completion instead of yasnippet

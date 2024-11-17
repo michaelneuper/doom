@@ -207,3 +207,12 @@
          :desc "Open ORUI"
          "u" #'org-roam-ui-open))
 #+end_src
+*** python
+#+begin_src emacs-lisp
+(after! eglot
+  (add-to-list 'eglot-server-programs '(python-mode . ("pyright-langserver" "--stdio"))))
+
+(add-hook! python-mode
+  (setq python-shell-interpreter "python3.12"
+        doom-modeline-env-python-executable "python3.12"))
+#+end_src

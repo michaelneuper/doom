@@ -94,7 +94,8 @@
   (insert "\n" (+doom-dashboard--center +doom-dashboard--width "Welcome back to Emacs!"))
   (setq mode-line-format nil)
   (hl-line-mode 0)
-  (read-only-mode +1))
+  (read-only-mode +1)
+  (solaire-mode 0))
 
 (setq-hook! '+doom-dashboard-mode-hook evil-normal-state-cursor (list nil))
 

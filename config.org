@@ -128,7 +128,8 @@
 #+begin_src emacs-lisp
 (after! doom-modeline
   (setq doom-modeline-enable-word-count nil
-        doom-modeline-major-mode-icon t))
+        doom-modeline-major-mode-icon t
+        doom-modeline-height 25))
 #+end_src
 ** :emacs
 *** dired

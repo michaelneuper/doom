@@ -189,6 +189,7 @@
   :defer t
   :config
   (setq org-roam-directory (file-truename "~/Notes")
+        org-roam-db-location (file-truename "~/Notes/org-roam.db")
         org-attach-id-dir "assets/")
   (org-roam-db-autosync-enable))
 

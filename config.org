@@ -136,7 +136,7 @@
 (after! dirvish
   (setq! dirvish-quick-access-entries
          `(("h" "~/"           "Home")
-           ("e" ,doom-user-dir "Doom config")
+           ("e" doom-user-dir "Doom config")
            ("c" "~/Developer/" "Code")
            ("d" "~/Downloads/" "Downloads")
            ("g" "~/GitHub/"    "GitHub")

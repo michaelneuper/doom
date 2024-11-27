@@ -60,6 +60,9 @@
 
 ;; FONTS
 (setq doom-font (font-spec :family "SF Mono" :size 15.5)
+      doom-serif-font (font-spec :family "ETBembo" :size 15.5)
+      doom-variable-pitch-font (font-spec :family "ETBembo" :size 20)
+      doom-emoji-font (font-spec :family "Apple Color Emoji" :size 15.5)
       doom-symbol-font (font-spec :family "Cascadia Code" :size 15.5))
 
 ; remap <localleader> from SPC m to SPC l
@@ -130,6 +133,14 @@
   (setq doom-modeline-enable-word-count nil
         doom-modeline-major-mode-icon t
         doom-modeline-height 25))
+*** zen
+#+begin_src emacs-lisp
+(add-hook! 'org-mode-hook #'mixed-pitch-mode)
+
+(after! mixed-pitch
+  (setq mixed-pitch-set-height t)
+  (setq variable-pitch-serif-font doom-variable-pitch-font)
+  (set-face-attribute 'variable-pitch nil :height 1.2))
 #+end_src
 ** :emacs
 *** dired
@@ -172,7 +183,8 @@
 #+begin_src emacs-lisp
 (setq org-directory "~/Documents/Org"
       org-use-property-inheritance t ; fix weird issue with src blocks
-      org-startup-with-inline-images t)
+      org-startup-with-inline-images t
+      org-hide-emphasis-markers t)
 
 (after! org
   (add-to-list 'org-latex-packages-alist '("" "amsmath" t))
@@ -182,7 +194,7 @@
 
 ; xenops
 (add-hook 'org-mode-hook #'xenops-mode)
-(setq xenops-math-image-scale-factor 1.7
+(setq xenops-math-image-scale-factor 1.6
       xenops-reveal-on-entry t)
 
 ; org-roam

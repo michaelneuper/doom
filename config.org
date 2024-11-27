@@ -9,6 +9,7 @@
   - [[#completion][:completion]]
   - [[#ui][:ui]]
   - [[#emacs-1][:emacs]]
+  - [[#tools][:tools]]
   - [[#lang][:lang]]
 
 * Basic
@@ -162,6 +163,15 @@
            ("d" "~/Downloads/" "Downloads")
            ("g" "~/GitHub/"    "GitHub")
            ("t" "~/.Trash/"    "Trash"))))
+#+end_src
+** :tools
+*** lsp
+Improve =eglot= performance.
+*NOTE*: Requires building [[https://github.com/blahgeek/emacs-lsp-booster?tab=readme-ov-file#obtain-or-build-emacs-lsp-booster][emacs-lsp-booster]].
+#+begin_src emacs-lisp
+(use-package! eglot-booster
+  :after eglot
+  :config (eglot-booster-mode))
 #+end_src
 ** :lang
 *** cc

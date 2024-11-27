@@ -136,7 +136,11 @@
         doom-modeline-buffer-encoding t
         doom-modeline-major-mode-icon t
         doom-modeline-height 25
-        doom-modeline-modal nil))
+        doom-modeline-modal nil)
+
+  (when (eq doom-theme 'doom-gruvbox)
+    (custom-set-faces
+     '(mode-line ((t (:background "#282828")))))))
 #+end_src
 *** zen
 #+begin_src emacs-lisp

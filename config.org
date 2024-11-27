@@ -130,9 +130,14 @@
 *** modeline
 #+begin_src emacs-lisp
 (after! doom-modeline
-  (setq doom-modeline-enable-word-count nil
+  (setq doom-modeline-buffer-file-name-style 'file-name
+        doom-modeline-always-show-macro-register t
+        doom-modeline-enable-word-count nil
+        doom-modeline-buffer-encoding t
         doom-modeline-major-mode-icon t
-        doom-modeline-height 25))
+        doom-modeline-height 25
+        doom-modeline-modal nil))
+#+end_src
 *** zen
 #+begin_src emacs-lisp
 (add-hook! 'org-mode-hook #'mixed-pitch-mode)

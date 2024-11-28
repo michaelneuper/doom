@@ -29,8 +29,8 @@
 ; set macOS modifier keys
 (if (featurep :system 'macos)
   (setq mac-command-modifier 'meta
-        mac-option-modifier 'super
-        mac-right-option-modifier 'none))
+        mac-option-modifier 'none
+        mac-right-option-modifier 'super))
 
 ; line numbers
 (setq display-line-numbers-type 'visual)

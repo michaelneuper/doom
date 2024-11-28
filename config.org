@@ -33,16 +33,39 @@
         mac-right-option-modifier 'super))
 
 ; line numbers
+;; TODO change to only in org mode
 (setq display-line-numbers-type 'visual)
-(custom-set-faces! ; don't make line numbers italic
-  '(line-number :slant normal)
-  '(line-number-current-line :slant normal))
+
+(add-hook! display-line-numbers-mode
+  (custom-set-faces! ; don't make line numbers italic
+    '(line-number :slant normal)
+    '(line-number-current-line :slant normal)))
 
 ; column fill indicator
 (setq display-fill-column-indicator-column 80)
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
 
+; don't highlight current line
+(setq global-hl-line-modes nil)
+
 (pixel-scroll-precision-mode 1)
+
+(add-to-list 'default-frame-alist '(width . 100))
+(add-to-list 'default-frame-alist '(height . 40))
+
+;; https://hieuphay.com/doom-emacs-config/#some-good-defaults
+(setq frame-title-format
+      '(""
+        (:eval
+         (if (s-contains-p org-roam-directory (or buffer-file-name ""))
+             (replace-regexp-in-string
+              ".*/[0-9]*-?" "☰ "
+              (subst-char-in-string ?_ ?  buffer-file-name))
+           "%b"))
+        (:eval
+         (let ((project-name (projectile-project-name)))
+           (unless (string= "-" project-name)
+             (format (if (buffer-modified-p)  " ◉ %s" "  ●  %s") project-name))))))
 
 ; make emacs faster
 (use-package! gcmh
@@ -120,8 +143,7 @@ Add keybindings for [[https:https://github.com/copilot-emacs/copilot.el][copilot
   (insert "\n" (+doom-dashboard--center +doom-dashboard--width "Welcome back to Emacs!"))
   (setq mode-line-format nil)
   (hl-line-mode 0)
-  (read-only-mode +1)
-  (solaire-mode 0))
+  (read-only-mode +1))
 
 (setq-hook! '+doom-dashboard-mode-hook evil-normal-state-cursor (list nil))
 
@@ -158,12 +180,15 @@ Add keybindings for [[https:https://github.com/copilot-emacs/copilot.el][copilot
         doom-modeline-enable-word-count nil
         doom-modeline-buffer-encoding t
         doom-modeline-major-mode-icon t
+        doom-modeline-bar-width 0
         doom-modeline-height 25
-        doom-modeline-modal nil)
+        doom-modeline-modal nil))
 
-  (when (eq doom-theme 'doom-gruvbox)
-    (custom-set-faces
-     '(mode-line ((t (:background "#282828")))))))
+;; TODO remove
+;; (when (eq doom-theme 'doom-gruvbox)
+;;   (custom-set-faces
+;;    '(mode-line ((t (:background "#3c3836"))))
+;;    '(mode-line-active ((t (:background "#3c3836"))))))  ; other bg: #282828
 #+end_src
 *** zen
 #+begin_src emacs-lisp
@@ -174,13 +199,31 @@ Add keybindings for [[https:https://github.com/copilot-emacs/copilot.el][copilot
   (setq variable-pitch-serif-font doom-variable-pitch-font)
   (set-face-attribute 'variable-pitch nil :height 1.2))
 #+end_src
+*** other
+**** spacious-padding
+Add padding to emacs frames and windows with [[doom-package:spacious-padding][spacious-padding]].
+See [[https://protesilaos.com/emacs/spacious-padding]] for configuration options.
+#+begin_src emacs-lisp
+(use-package! spacious-padding
+  :ensure t
+  :config
+  (setq spacious-padding-widths
+        '( :internal-border-width 15
+           :header-line-width 4
+           :mode-line-width 4
+           :tab-width 4
+           :right-divider-width 30
+           :scroll-bar-width 8
+           :fringe-width 0))
+  (spacious-padding-mode 1))
+#+end_src
 ** :emacs
 *** dired
 #+begin_src emacs-lisp
 (after! dirvish
   (setq! dirvish-quick-access-entries
          `(("h" "~/"           "Home")
-           ("e" doom-user-dir "Doom config")
+           ("e" ,doom-user-dir "Doom config")
            ("c" "~/Developer/" "Code")
            ("d" "~/Downloads/" "Downloads")
            ("g" "~/GitHub/"    "GitHub")
@@ -226,6 +269,27 @@ Improve =eglot= performance.
       org-use-property-inheritance t ; fix weird issue with src blocks
       org-startup-with-inline-images t
       org-hide-emphasis-markers t)
+
+(after! org
+  (custom-set-faces!
+    `((org-document-title)
+      :foreground ,(face-attribute 'org-document-title :foreground)
+      :height 1.3 :weight bold)
+    `((org-level-1)
+      :foreground ,(face-attribute 'outline-1 :foreground)
+      :height 1.1 :weight medium)
+    `((org-level-2)
+      :foreground ,(face-attribute 'outline-2 :foreground)
+      :weight medium)
+    `((org-level-3)
+      :foreground ,(face-attribute 'outline-3 :foreground)
+      :weight medium)
+    `((org-level-4)
+      :foreground ,(face-attribute 'outline-4 :foreground)
+      :weight medium)
+    `((org-level-5)
+      :foreground ,(face-attribute 'outline-5 :foreground)
+      :weight medium)))
 
 (after! org
   (add-to-list 'org-latex-packages-alist '("" "amsmath" t))

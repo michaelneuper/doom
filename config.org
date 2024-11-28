@@ -299,7 +299,8 @@ Set some org variables.
       org-use-property-inheritance t ; fix weird issue with src blocks
       org-startup-with-inline-images t
       org-hide-emphasis-markers t
-      org-edit-src-content-indentation 0)
+      org-edit-src-content-indentation 0
+      org-startup-with-latex-preview t)
 #+end_src
 
 Scale org headings.
@@ -327,6 +328,7 @@ Scale org headings.
 #+end_src
 
 Setup LaTeX previews in =org-mode=.
+See [[https://abode.karthinks.com/org-latex-preview/][https://abode.karthinks.com/org-latex-preview/]] for configuration.
 #+begin_src emacs-lisp
 (after! org
   (add-to-list 'org-latex-packages-alist '("" "amsmath" t))
@@ -334,10 +336,18 @@ Setup LaTeX previews in =org-mode=.
   (add-to-list 'org-latex-packages-alist '("" "mathtools" t))
   (add-to-list 'org-latex-packages-alist '("" "mathrsfs" t)))
 
-; xenops
-(add-hook 'org-mode-hook #'xenops-mode)
-(setq xenops-math-image-scale-factor 1.6
-      xenops-reveal-on-entry t)
+(use-package! org-latex-preview
+  :after org
+  :config
+  (plist-put org-latex-preview-appearance-options
+             :page-width 0.8)
+  (add-hook 'org-mode-hook 'org-latex-preview-auto-mode)
+  (setq org-latex-preview-auto-ignored-commands
+        '(next-line previous-line mwheel-scroll
+          scroll-up-command scroll-down-command))
+  (setq org-latex-preview-numbered t)
+  (setq org-latex-preview-live t)
+  (setq org-latex-preview-live-debounce 0.25))
 #+end_src
 **** eye candy
 =org-modern= config modified from [[https://sophiebos.io/posts/beautifying-emacs-org-mode/][https://sophiebos.io/posts/beautifying-emacs-org-mode/]].

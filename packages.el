@@ -14,3 +14,4 @@
 (package! spacious-padding)
 (package! eglot-booster
   :recipe (:host github :repo "jdtsmith/eglot-booster"))
+(package! org-modern)

@@ -1,59 +1,110 @@
 #+title: Doom Emacs Config
 #+author: Michael Neuper
 
+This is my literate doom emacs config.
+[[Basic]] sets up some basic emacs and doom configurations.
+[[Doom Modules]] contains the configuration for doom's modules ordered by the same order as in =init.el=.
+This section also contains configuration for other packages in =packages.el= under headings that seem appropriate.
+
 * Contents :toc:
 - [[#basic][Basic]]
-  - [[#emacs][Emacs]]
-  - [[#doom][Doom]]
-- [[#doom-1][Doom]]
+  - [[#defaults][Defaults]]
+  - [[#visual-enchancements][Visual Enchancements]]
+- [[#doom-modules][Doom Modules]]
   - [[#completion][:completion]]
   - [[#ui][:ui]]
-  - [[#emacs-1][:emacs]]
+  - [[#emacs][:emacs]]
   - [[#tools][:tools]]
   - [[#lang][:lang]]
 
 * Basic
-** Emacs
+** Defaults
+*** Speed
+Make emacs faster.
 #+begin_src emacs-lisp
-; credentials
+(use-package! gcmh
+  :init
+  (setq gcmh-idle-delay 5
+        gcmh-high-cons-threshold (* 256 1024 1024))  ; 256MB during idle
+  :config
+  (gcmh-mode 1))
+
+(setq gc-cons-threshold 200000000) ; previous 33554432
+#+end_src
+*** Basic
+#+begin_src emacs-lisp
+;; credentials
 (setq user-full-name "Michael Neuper"
       user-mail-address "michael@michaelneuper.com")
 
-; autosave and backup
+;; autosave and backup
 (setq auto-save-default t
       make-backup-files t)
 
-; kill emacs without confiming
+;; kill emacs without confiming
 (setq confirm-kill-emacs nil)
 
-; set macOS modifier keys
+;; remap <localleader> from SPC m to SPC l
+(setq doom-localleader-key "SPC l"
+      doom-localleader-alt-key "M-SPC l")
+#+end_src
+*** macOS
+Set the modifier keys for macos:
+- =command=: =meta=
+- =right option=: =super=
+#+begin_src emacs-lisp
 (if (featurep :system 'macos)
   (setq mac-command-modifier 'meta
         mac-option-modifier 'none
         mac-right-option-modifier 'super))
+#+end_src
+** Visual Enchancements
+*** Theme & Fonts
+#+begin_src emacs-lisp
+(setq doom-theme 'doom-gruvbox)
 
-; line numbers
-;; TODO change to only in org mode
-(setq display-line-numbers-type 'visual)
+(setq doom-font (font-spec :family "SF Mono" :size 15.5)
+      doom-serif-font (font-spec :family "ETBembo" :size 15.5)
+      doom-variable-pitch-font (font-spec :family "ETBembo" :size 20)
+      doom-emoji-font (font-spec :family "Apple Color Emoji" :size 15.5)
+      doom-symbol-font (font-spec :family "Cascadia Code" :size 15.5))
+#+end_src
+*** Lines
+Enable relative line numbers and make their slant normal (not italic).
+#+begin_src emacs-lisp
+(setq display-line-numbers-type 'relative) ;; TODO change to 'visual in org-mode
 
 (add-hook! display-line-numbers-mode
-  (custom-set-faces! ; don't make line numbers italic
+  (custom-set-faces!
     '(line-number :slant normal)
     '(line-number-current-line :slant normal)))
+#+end_src
 
-; column fill indicator
+Disable highlighting of the current line.
+#+begin_src emacs-lisp
+(setq global-hl-line-modes nil)
+#+end_src
+
+Display a fill indicator at 80 characters in =prog-mode=.
+#+begin_src emacs-lisp
 (setq display-fill-column-indicator-column 80)
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
+#+end_src
 
-; don't highlight current line
-(setq global-hl-line-modes nil)
-
+Enable pixel-precision scrolling.
+#+begin_src emacs-lisp
 (pixel-scroll-precision-mode 1)
-
+#+end_src
+*** Window
+Start emacs in a 100x40 window.
+#+begin_src emacs-lisp
 (add-to-list 'default-frame-alist '(width . 100))
 (add-to-list 'default-frame-alist '(height . 40))
+#+end_src
 
-;; https://hieuphay.com/doom-emacs-config/#some-good-defaults
+Format the title.
+Copied from [[https://hieuphay.com/doom-emacs-config/#some-good-defaults][https://hieuphay.com/doom-emacs-config/#some-good-defaults]].
+#+begin_src emacs-lisp
 (setq frame-title-format
       '(""
         (:eval
@@ -66,36 +117,11 @@
          (let ((project-name (projectile-project-name)))
            (unless (string= "-" project-name)
              (format (if (buffer-modified-p)  " ◉ %s" "  ●  %s") project-name))))))
-
-; make emacs faster
-(use-package! gcmh
-  :init
-  (setq gcmh-idle-delay 5
-        gcmh-high-cons-threshold (* 256 1024 1024))  ; 256MB during idle
-  :config
-  (gcmh-mode 1))
-
-(setq gc-cons-threshold 200000000) ; previous 33554432
 #+end_src
-** Doom
-#+begin_src emacs-lisp
-;; THEME
-(setq doom-theme 'doom-gruvbox)
-
-;; FONTS
-(setq doom-font (font-spec :family "SF Mono" :size 15.5)
-      doom-serif-font (font-spec :family "ETBembo" :size 15.5)
-      doom-variable-pitch-font (font-spec :family "ETBembo" :size 20)
-      doom-emoji-font (font-spec :family "Apple Color Emoji" :size 15.5)
-      doom-symbol-font (font-spec :family "Cascadia Code" :size 15.5))
-
-; remap <localleader> from SPC m to SPC l
-(setq doom-localleader-key "SPC l"
-      doom-localleader-alt-key "M-SPC l")
-#+end_src
-* Doom
+* Doom Modules
 ** :completion
 *** corfu
+Disable corfu's auto-popups and preselect the first candidate.
 #+begin_src emacs-lisp
 (after! corfu
   (setq corfu-auto nil
@@ -136,6 +162,8 @@ Add keybindings for [[https:https://github.com/copilot-emacs/copilot.el][copilot
 #+end_src
 ** :ui
 *** doom-dashboard
+Customise the dashboard.
+Copied from [[https://discourse.doomemacs.org/t/how-to-change-your-splash-screen/57][https://discourse.doomemacs.org/t/how-to-change-your-splash-screen/57]].
 #+begin_src emacs-lisp
 (remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-shortmenu)
 
@@ -173,6 +201,7 @@ Add keybindings for [[https:https://github.com/copilot-emacs/copilot.el][copilot
 (setq +doom-dashboard-ascii-banner-fn #'my-weebery-is-always-greater)
 #+end_src
 *** modeline
+Customise the modeline according to [[https://github.com/seagle0128/doom-modeline?tab=readme-ov-file#customize][https://github.com/seagle0128/doom-modeline?tab=readme-ov-file#customize]].
 #+begin_src emacs-lisp
 (after! doom-modeline
   (setq doom-modeline-buffer-file-name-style 'file-name
@@ -183,14 +212,10 @@ Add keybindings for [[https:https://github.com/copilot-emacs/copilot.el][copilot
         doom-modeline-bar-width 0
         doom-modeline-height 25
         doom-modeline-modal nil))
-
-;; TODO remove
-;; (when (eq doom-theme 'doom-gruvbox)
-;;   (custom-set-faces
-;;    '(mode-line ((t (:background "#3c3836"))))
-;;    '(mode-line-active ((t (:background "#3c3836"))))))  ; other bg: #282828
 #+end_src
 *** zen
+Enable =mixed-pitch-mode= in org files and scale =doom-variable-pitch-font=.
+Copied from [[https://discourse.doomemacs.org/t/cant-size-doom-variable-pitch-font/4572/2][https://discourse.doomemacs.org/t/cant-size-doom-variable-pitch-font/4572/2]].
 #+begin_src emacs-lisp
 (add-hook! 'org-mode-hook #'mixed-pitch-mode)
 
@@ -219,6 +244,7 @@ See [[https://protesilaos.com/emacs/spacious-padding]] for configuration options
 #+end_src
 ** :emacs
 *** dired
+Set =quick-access-entries= for =dirvish=.
 #+begin_src emacs-lisp
 (after! dirvish
   (setq! dirvish-quick-access-entries
@@ -240,11 +266,13 @@ Improve =eglot= performance.
 #+end_src
 ** :lang
 *** cc
+Set indentation level for =cc-mode= to 2.
 #+begin_src emacs-lisp
 (after! cc-mode
   (setq c-basic-offset 2))
 #+end_src
 *** java
+Set indentation level for =java-mode= to 2.
 #+begin_src emacs-lisp
 (after! java-mode
   (setq c-basic-offset 2))
@@ -264,12 +292,17 @@ Improve =eglot= performance.
       "e" #'cdlatex-environment)
 #+end_src
 *** org
+**** org-mode
+Set some org variables.
 #+begin_src emacs-lisp
 (setq org-directory "~/Documents/Org"
       org-use-property-inheritance t ; fix weird issue with src blocks
       org-startup-with-inline-images t
       org-hide-emphasis-markers t)
+#+end_src
 
+Scale org headings.
+#+begin_src emacs-lisp
 (after! org
   (custom-set-faces!
     `((org-document-title)
@@ -290,7 +323,10 @@ Improve =eglot= performance.
     `((org-level-5)
       :foreground ,(face-attribute 'outline-5 :foreground)
       :weight medium)))
+#+end_src
 
+Setup LaTeX previews in =org-mode=.
+#+begin_src emacs-lisp
 (after! org
   (add-to-list 'org-latex-packages-alist '("" "amsmath" t))
   (add-to-list 'org-latex-packages-alist '("" "amssymb" t))
@@ -303,6 +339,10 @@ Improve =eglot= performance.
       xenops-reveal-on-entry t)
 
 ; org-roam
+#+end_src
+**** org-roam
+Set up =org-roam= and =org-roam-ui= along with their keybindings that have the [[kbd:][<leader> r]]  prefix.
+#+begin_src emacs-lisp
 (use-package! org-roam
   :defer t
   :config
@@ -341,6 +381,9 @@ Improve =eglot= performance.
          "u" #'org-roam-ui-open))
 #+end_src
 *** python
+Requires [[doom-module::lang python +lsp][eglot]]
+*NOTE*: Requires =pyright= to be installed.
+Install with ~npm install -g pyright~.
 #+begin_src emacs-lisp
 (after! eglot
   (add-to-list 'eglot-server-programs '(python-mode . ("pyright-langserver" "--stdio"))))

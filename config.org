@@ -91,9 +91,15 @@ Display a fill indicator at 80 characters in =prog-mode=.
 (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
 #+end_src
 
-Enable pixel-precision scrolling.
+Smooth scrolling.
+Run ~(package-vc-install '(ultra-scroll :vc-backend Git :url  "https://github.com/jdtsmith/ultra-scroll"))~ in =*scratch*= buffer.
 #+begin_src emacs-lisp
-(pixel-scroll-precision-mode 1)
+(use-package! ultra-scroll
+  :init
+  (setq scroll-conservatively 101 ; important!
+        scroll-margin 0)
+  :config
+  (ultra-scroll-mode 1))
 #+end_src
 *** Window
 Start emacs in a 100x40 window.

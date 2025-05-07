@@ -1,6 +1,10 @@
 #+title: Doom Emacs Config
 #+author: Michael Neuper
 
+#+begin_src emacs-lisp
+;;; config.el -*- lexical-binding: t; -*-
+#+end_src
+
 This is my literate doom emacs config.
 [[Basic]] sets up some basic emacs and doom configurations.
 [[Doom Modules]] contains the configuration for doom's modules ordered by the same order as in =init.el=.
@@ -251,6 +255,8 @@ See [[https://protesilaos.com/emacs/spacious-padding]] for configuration options
 ** :emacs
 *** dired
 Set =quick-access-entries= for =dirvish=.
+Ensure the following programs are installed for previews:
+https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#install-dependencies-for-an-enhanced-preview-experience
 #+begin_src emacs-lisp
 (after! dirvish
   (setq! dirvish-quick-access-entries
@@ -421,7 +427,7 @@ Set up =org-roam= and =org-roam-ui= along with their keybindings that have the [
          "u" #'org-roam-ui-open))
 #+end_src
 *** python
-Requires [[doom-module::lang python +lsp][eglot]]
+Requires [[doom-module::lang python +lsp][eglot]].
 *NOTE*: Requires =pyright= to be installed.
 Install with ~npm install -g pyright~.
 #+begin_src emacs-lisp

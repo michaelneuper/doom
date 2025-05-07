@@ -69,7 +69,7 @@ Set the modifier keys for macos:
 
 (setq doom-font (font-spec :family "SF Mono" :size 15.5)
       doom-serif-font (font-spec :family "ETBembo" :size 15.5)
-      doom-variable-pitch-font (font-spec :family "ETBembo" :size 20)
+      doom-variable-pitch-font (font-spec :family "Latin Modern Roman" :size 20)
       doom-emoji-font (font-spec :family "Apple Color Emoji" :size 15.5)
       doom-symbol-font (font-spec :family "Cascadia Code" :size 15.5))
 #+end_src
@@ -312,7 +312,8 @@ Set some org variables.
       org-startup-with-inline-images t
       org-hide-emphasis-markers t
       org-edit-src-content-indentation 0
-      org-startup-with-latex-preview t)
+      org-startup-with-latex-preview t
+      org-highlight-latex-and-related '(latex script))
 #+end_src
 
 Scale org headings.
@@ -341,6 +342,7 @@ Scale org headings.
 
 Setup LaTeX previews in =org-mode=.
 See [[https://abode.karthinks.com/org-latex-preview/][https://abode.karthinks.com/org-latex-preview/]] for configuration.
+Also https://gist.github.com/karthink/0ac48411a81459c0f3fd7557c4e817db.
 #+begin_src emacs-lisp
 (after! org
   (add-to-list 'org-latex-packages-alist '("" "amsmath" t))
@@ -356,10 +358,44 @@ See [[https://abode.karthinks.com/org-latex-preview/][https://abode.karthinks.co
   (add-hook 'org-mode-hook 'org-latex-preview-auto-mode)
   (setq org-latex-preview-auto-ignored-commands
         '(next-line previous-line mwheel-scroll
-          scroll-up-command scroll-down-command))
-  (setq org-latex-preview-numbered t)
-  (setq org-latex-preview-live t)
-  (setq org-latex-preview-live-debounce 0.25))
+          scroll-up-command scroll-down-command)
+        org-latex-preview-numbered t
+        org-latex-preview-live t
+        org-latex-preview-live-debounce 0.25)
+
+  ;; code for centering LaTeX previews -- a terrible idea
+  (defun my/org-latex-preview-uncenter (ov)
+    (overlay-put ov 'before-string nil))
+  (defun my/org-latex-preview-recenter (ov)
+    (overlay-put ov 'before-string (overlay-get ov 'justify)))
+  (defun my/org-latex-preview-center (ov)
+    (save-excursion
+      (goto-char (overlay-start ov))
+      (when-let* ((elem (org-element-context))
+                  ((or (eq (org-element-type elem) 'latex-environment)
+                       (string-match-p "^\\\\\\[" (org-element-property :value elem))))
+                  (img (overlay-get ov 'display))
+                  (prop `(space :align-to (- center (0.55 . ,img))))
+                  (justify (propertize " " 'display prop 'face 'default)))
+        (overlay-put ov 'justify justify)
+        (overlay-put ov 'before-string (overlay-get ov 'justify)))))
+  (define-minor-mode org-latex-preview-center-mode
+    "Center equations previewed with `org-latex-preview'."
+    :global nil
+    (if org-latex-preview-center-mode
+        (progn
+          (add-hook 'org-latex-preview-overlay-open-functions
+                    #'my/org-latex-preview-uncenter nil :local)
+          (add-hook 'org-latex-preview-overlay-close-functions
+                    #'my/org-latex-preview-recenter nil :local)
+          (add-hook 'org-latex-preview-overlay-update-functions
+                    #'my/org-latex-preview-center nil :local))
+      (remove-hook 'org-latex-preview-overlay-close-functions
+                   #'my/org-latex-preview-recenter)
+      (remove-hook 'org-latex-preview-overlay-update-functions
+                   #'my/org-latex-preview-center)
+      (remove-hook 'org-latex-preview-overlay-open-functions
+                   #'my/org-latex-preview-uncenter))))
 #+end_src
 **** org-download (dragndrop)
 #+begin_src emacs-lisp

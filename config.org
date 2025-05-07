@@ -279,6 +279,11 @@ https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#install-dep
            ("d" "~/Downloads/" "Downloads")
            ("g" "~/GitHub/"    "GitHub")
            ("t" "~/.Trash/"    "Trash"))))
+
+(map! :leader
+      :prefix "o"
+      :desc "Dirvish Quick Access"
+      "q" #'dirvish-quick-access)
 #+end_src
 ** :tools
 *** lsp

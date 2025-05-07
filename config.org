@@ -420,7 +420,7 @@ Also https://gist.github.com/karthink/0ac48411a81459c0f3fd7557c4e817db.
 
 (map! :map org-mode-map
       :localleader
-      :prefix ("a" . "attachments")
+      :prefix "a"
       :desc "Rename image at point"
       "C" #'org-download-rename-at-point)
 #+end_src
@@ -461,15 +461,19 @@ Set up =org-roam= and =org-roam-ui= along with their keybindings that have the [
   (org-roam-db-autosync-enable))
 
 (use-package! websocket
-    :after org-roam)
+  :after org-roam)
 
 (use-package! org-roam-ui
-    :after org-roam
-    :config
-    (setq org-roam-ui-sync-theme t
-          org-roam-ui-follow t
-          org-roam-ui-update-on-save t
-          org-roam-ui-open-on-start t))
+  :after org-roam
+  :config
+  (setq org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start t
+        org-roam-mode-sections
+        (list #'org-roam-backlinks-section
+              #'org-roam-reflinks-section
+              #'org-roam-unlinked-references-section)))
 
 (defun my/org-roam-node-insert-after-point ()
   "Insert org-roam link *after* point when in Evil normal mode."
@@ -481,22 +485,22 @@ Set up =org-roam= and =org-roam-ui= along with their keybindings that have the [
   (call-interactively #'org-roam-node-insert))
 
 (map! :map evil-org-mode-map
-        :leader
-        (:prefix ("r")
-         :desc "Insert node"
-         "i" #'my/org-roam-node-insert-after-point
-         :desc "Find node"
-         "f" #'org-roam-node-find
-         :desc "Capture to node"
-         "c" #'org-roam-capture
-         :desc "Toggle roam buffer"
-         "b" #'org-roam-buffer-toggle
-         :desc "Open random note"
-         "r" #'org-roam-node-random
-         :desc "Visit node"
-         "v" #'org-roam-node-visit
-         :desc "Open ORUI"
-         "u" #'org-roam-ui-open))
+      :leader
+      (:prefix ("r" . "roam")
+       :desc "Insert node"
+       "i" #'my/org-roam-node-insert-after-point
+       :desc "Find node"
+       "f" #'org-roam-node-find
+       :desc "Capture to node"
+       "c" #'org-roam-capture
+       :desc "Toggle roam buffer"
+       "b" #'org-roam-buffer-toggle
+       :desc "Open random note"
+       "r" #'org-roam-node-random
+       :desc "Visit node"
+       "v" #'org-roam-node-visit
+       :desc "Open ORUI"
+       "u" #'org-roam-ui-open))
 #+end_src
 *** python
 Requires [[doom-module::lang python +lsp][eglot]].

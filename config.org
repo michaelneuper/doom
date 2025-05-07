@@ -171,6 +171,19 @@ Add keybindings for [[https:https://github.com/copilot-emacs/copilot.el][copilot
        "x" #'copilot-chat-del-current-buffer))
 #+end_src
 ** :ui
+*** deft
+#+begin_src emacs-lisp
+(after! deft
+  (setq deft-recursive t
+        deft-use-filter-string-for-filename t
+        deft-default-extension "org"
+        deft-directory org-roam-directory))
+
+(map! :leader
+      :prefix "r"
+      :desc "Search with deft"
+      "s" #'deft)
+#+end_src
 *** doom-dashboard
 Customise the dashboard.
 Copied from [[https://discourse.doomemacs.org/t/how-to-change-your-splash-screen/57][https://discourse.doomemacs.org/t/how-to-change-your-splash-screen/57]].

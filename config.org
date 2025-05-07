@@ -361,6 +361,20 @@ See [[https://abode.karthinks.com/org-latex-preview/][https://abode.karthinks.co
   (setq org-latex-preview-live t)
   (setq org-latex-preview-live-debounce 0.25))
 #+end_src
+**** org-download (dragndrop)
+#+begin_src emacs-lisp
+(after! org-download
+  (setq org-download-method 'directory
+        org-download-image-dir "images"
+        org-download-link-format (format "[[file:%s/%%s]]" org-download-image-dir)
+        org-download-heading-lvl nil))
+
+(map! :map org-mode-map
+      :localleader
+      :prefix ("a" . "attachments")
+      :desc "Rename image at point"
+      "C" #'org-download-rename-at-point)
+#+end_src
 **** eye candy
 =org-modern= config modified from [[https://sophiebos.io/posts/beautifying-emacs-org-mode/][https://sophiebos.io/posts/beautifying-emacs-org-mode/]].
 #+begin_src emacs-lisp

@@ -422,11 +422,20 @@ Set up =org-roam= and =org-roam-ui= along with their keybindings that have the [
           org-roam-ui-update-on-save t
           org-roam-ui-open-on-start t))
 
+(defun my/org-roam-node-insert-after-point ()
+  "Insert org-roam link *after* point when in Evil normal mode."
+  (interactive)
+  (when (and (bound-and-true-p evil-mode)
+             (evil-normal-state-p)
+             (not (eolp))) ; prevent overshooting line
+    (forward-char))
+  (call-interactively #'org-roam-node-insert))
+
 (map! :map evil-org-mode-map
         :leader
         (:prefix ("r")
          :desc "Insert node"
-         "i" #'org-roam-node-insert
+         "i" #'my/org-roam-node-insert-after-point
          :desc "Find node"
          "f" #'org-roam-node-find
          :desc "Capture to node"

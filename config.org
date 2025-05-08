@@ -381,6 +381,16 @@ Disable bold links.
   (custom-set-faces!
     '(org-link :weight normal)))
 #+end_src
+
+Enable =evil-tex-mode= in LaTeX source blocks.
+Requires [[doom-module::lang latex]] to be enabled.
+#+begin_src emacs-lisp
+(add-hook 'org-src-mode-hook
+          (lambda ()
+            (when (string= major-mode "latex-mode")
+              (evil-tex-mode 1))))
+#+end_src
+
 Setup LaTeX previews in =org-mode=.
 See [[https://abode.karthinks.com/org-latex-preview/][https://abode.karthinks.com/org-latex-preview/]] for configuration.
 Also https://gist.github.com/karthink/0ac48411a81459c0f3fd7557c4e817db.

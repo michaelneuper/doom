@@ -67,9 +67,9 @@ Set the modifier keys for macos:
 #+begin_src emacs-lisp
 (setq doom-theme 'doom-gruvbox)
 
-(setq doom-font (font-spec :family "SF Mono" :size 15.5)
+(setq doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 15.5)
       doom-serif-font (font-spec :family "ETBembo" :size 15.5)
-      doom-variable-pitch-font (font-spec :family "Latin Modern Roman" :size 20)
+      doom-variable-pitch-font (font-spec :family "Latin Modern Roman" :size 15.5)
       doom-emoji-font (font-spec :family "Apple Color Emoji" :size 15.5)
       doom-symbol-font (font-spec :family "Cascadia Code" :size 15.5))
 #+end_src
@@ -352,6 +352,12 @@ Scale org headings.
       :weight medium)))
 #+end_src
 
+Disable bold links.
+#+begin_src emacs-lisp
+(after! org
+  (custom-set-faces!
+    '(org-link :weight normal)))
+#+end_src
 Setup LaTeX previews in =org-mode=.
 See [[https://abode.karthinks.com/org-latex-preview/][https://abode.karthinks.com/org-latex-preview/]] for configuration.
 Also https://gist.github.com/karthink/0ac48411a81459c0f3fd7557c4e817db.

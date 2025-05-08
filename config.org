@@ -232,8 +232,14 @@ Copied from [[https://discourse.doomemacs.org/t/cant-size-doom-variable-pitch-fo
 (add-hook! 'org-mode-hook #'mixed-pitch-mode)
 
 (after! mixed-pitch
-  (setq mixed-pitch-set-height t)
-  (setq variable-pitch-serif-font doom-variable-pitch-font)
+  (setq mixed-pitch-set-height t
+        variable-pitch-serif-font doom-variable-pitch-font)
+
+  (pushnew! mixed-pitch-fixed-pitch-faces
+            'warning
+            'org-drawer 'org-cite-key 'org-list-dt 'org-hide
+            'corfu-default 'font-latex-math-face)
+
   (set-face-attribute 'variable-pitch nil :height 1.2))
 #+end_src
 *** other

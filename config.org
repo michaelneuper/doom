@@ -323,10 +323,9 @@ Set some org variables.
 (setq org-directory "~/Documents/Org"
       org-use-property-inheritance t ; fix weird issue with src blocks
       org-startup-with-inline-images t
-      org-hide-emphasis-markers t
       org-edit-src-content-indentation 0
       org-startup-with-latex-preview t
-      org-highlight-latex-and-related '(latex script))
+      org-highlight-latex-and-related '(native script))
 #+end_src
 
 Scale org headings.
@@ -427,27 +426,29 @@ Also https://gist.github.com/karthink/0ac48411a81459c0f3fd7557c4e817db.
 **** eye candy
 =org-modern= config modified from [[https://sophiebos.io/posts/beautifying-emacs-org-mode/][https://sophiebos.io/posts/beautifying-emacs-org-mode/]].
 #+begin_src emacs-lisp
-(use-package! org-modern
-  :after org
-  :config
-  (setq
-   org-auto-align-tags t
-   org-tags-column 0
-   org-fold-catch-invisible-edits 'show-and-error
-   org-special-ctrl-a/e t
-   org-insert-heading-respect-content t
+(after! org-modern
+  (setq org-auto-align-tags t
+        org-tags-column 0
+        org-fold-catch-invisible-edits 'show-and-error
+        org-special-ctrl-a/e t
+        org-insert-heading-respect-content t
 
-   ;; agenda
-   org-agenda-tags-column 0
-   org-agenda-block-separator ?─
-   org-agenda-time-grid
-   '((daily today require-timed)
-     (800 1000 1200 1400 1600 1800 2000)
-     " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
-   org-agenda-current-time-string
-   "⭠ now ─────────────────────────────────────────────────")
+        ;; agenda
+        org-agenda-tags-column 0
+        org-agenda-block-separator ?─
+        org-agenda-time-grid
+        '((daily today require-timed)
+          (800 1000 1200 1400 1600 1800 2000)
+          " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
+        org-agenda-current-time-string
+        "⭠ now ─────────────────────────────────────────────────"))
 
-  (global-org-modern-mode))
+(after! org-appear
+  (setq org-hide-emphasis-markers t
+        org-pretty-entities t
+        org-appear-autoentities t
+        org-appear-autosubmarkers t
+        org-appear-inside-latex t))
 #+end_src
 **** org-roam
 Set up =org-roam= and =org-roam-ui= along with their keybindings that have the [[kbd:][<leader> r]]  prefix.

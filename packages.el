@@ -29,7 +29,6 @@
   :pin nil)
 
 (package! org-roam-ui)
-(package! org-modern)
 
 ;; PROGRAMMING
 (package! copilot

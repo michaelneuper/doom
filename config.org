@@ -303,19 +303,42 @@ Set indentation level for =java-mode= to 2.
   (setq c-basic-offset 2))
 #+end_src
 *** latex
+My CDLaTeX templates.
 #+begin_src emacs-lisp
-; use cdlatex completion instead of yasnippet
-(map! :map cdlatex-mode-map
-      :i "TAB" #'cdlatex-tab)
+(after! cdlatex
+  (map! :map cdlatex-mode-map
+        :i "TAB" #'cdlatex-tab)
 
-(map! :after latex
-      :map cdlatex-mode-map
-      :localleader
-      :desc "Insert math symbol"
-      "i" #'cdlatex-math-symbol
-      :desc "Begin environment"
-      "e" #'cdlatex-environment)
+  (setq cdlatex-math-symbol-alist ; expand when prefixed with `
+        '((?e ("\\varepsilon" "\\epsilon"))
+          (?f ("\\varphi" "\\phi"))
+          (?0 ("\\varnothing" "\\emptyset"))
+          (?> ("\\to" "\\implies"))
+          (?= ("\\iff" "\\equiv"))
+          (?| ("\\mid" "\\vert"))
+          (?: ("\\coloneqq")))
+        cdlatex-math-modify-alist ; modify text with '
+        ;; key mathcmd textcmd type rmdot it
+        '((?b "\\mathbb" nil t nil nil)
+          (?c "\\mathcal" nil t nil nil)
+          (?f "\\mathbf" nil t nil nil)
+          (?m "\\mathrm" nil t nil nil)
+          (?r "\\mathrel" nil t nil nil)
+          (?o "\\operatorname" nil t nil nil))
+        cdlatex-command-alist ; expand with <TAB>
+        ;; keyword docstring replace hook args textflag mathflag
+        '(("eqn" "Insert an EQUATION* environment template" "" cdlatex-environment ("equation*") t nil)
+          ("aln" "Insert an ALIGN* environment template" "" cdlatex-environment ("align*") t nil)
+          ("sum" "Insert \\sum\\limits_{}^{}" "\\sum\\limits_{?}^{}" cdlatex-position-cursor nil nil t)
+          ("prod" "Insert \\prod\\limits_{}^{}" "\\prod\\limits_{?}^{}" cdlatex-position-cursor nil nil t)
+          ("bun" "Insert \\bigcup\\limits_{}^{}" "\\bigcup\\limits_{?}^{}" cdlatex-position-cursor nil nil t)
+          ("bin" "Insert \\bigcap\\limits_{}^{}" "\\bigcap\\limits_{?}^{}" cdlatex-position-cursor nil nil t)
+          ("lim" "Insert \\lim_\\limits{{} \to {}}" "\\lim_\\limits{{?} \to {}}" cdlatex-position-cursor nil nil t)
+          ("sr" "Insert {}^2" "{?}^2" cdlatex-position-cursor nil nil t)
+          ("cb" "Insert {}^3" "{?}^3" cdlatex-position-cursor nil nil t)
+          ("op" "Insert \\operatorname{}()" "\\operatorname{?}()" cdlatex-position-cursor nil nil t))))
 #+end_src
+*** TODO [[https://github.com/tecosaur/LaTeX-auto-activating-snippets][LaTeX Auto Activating Snippets]]
 *** org
 **** org-mode
 Set some org variables.

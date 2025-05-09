@@ -17,6 +17,7 @@ This section also contains configuration for other packages in =packages.el= und
 - [[#doom-modules][Doom Modules]]
   - [[#completion][:completion]]
   - [[#ui][:ui]]
+  - [[#editor][:editor]]
   - [[#emacs][:emacs]]
   - [[#tools][:tools]]
   - [[#lang][:lang]]
@@ -51,6 +52,18 @@ Make emacs faster.
 ;; remap <localleader> from SPC m to SPC l
 (setq doom-localleader-key "SPC l"
       doom-localleader-alt-key "M-SPC l")
+#+end_src
+
+Some =which-key= adjustments copied from https://tecosaur.github.io/emacs-config/config.html#which-key.
+#+begin_src emacs-lisp
+(setq which-key-idle-delay 0.5
+      which-key-allow-multiple-replacements t)
+
+(after! which-key
+  (pushnew!
+   which-key-replacement-alist
+   '(("" . "\\`+?evil[-:]?\\(?:a-\\)?\\(.*\\)") . (nil . "◂\\1"))
+   '(("\\`g s" . "\\`evilem--?motion-\\(.*\\)") . (nil . "◃\\1"))))
 #+end_src
 *** macOS
 Set the modifier keys for macos:
@@ -225,6 +238,33 @@ Customise the modeline according to [[https://github.com/seagle0128/doom-modelin
         doom-modeline-height 25
         doom-modeline-modal nil))
 #+end_src
+
+Change the filename showed in the modline in an =org-roam= buffer.
+Modified from https://tecosaur.github.io/emacs-config/config.html#modeline-file-name.
+#+begin_src emacs-lisp
+(defadvice! doom-modeline--buffer-file-name-roam-aware-a (orig-fun)
+  :around #'doom-modeline-buffer-file-name ; takes no args
+  (if (string-match-p (regexp-quote org-roam-directory) (or buffer-file-name ""))
+      (replace-regexp-in-string
+       "\\(?:^\\|.*/\\)\\([0-9]\\{4\\}\\)\\([0-9]\\{2\\}\\)\\([0-9]\\{2\\}\\)[0-9]*-"
+       "(\\1-\\2-\\3) "
+       (subst-char-in-string ?_ ?  buffer-file-name))
+    (funcall orig-fun)))
+#+end_src
+
+Only show file encoding in modeline when it's not =LF UTF-8=.
+Copied from https://tecosaur.github.io/emacs-config/config.html#file-encoding.
+#+begin_src emacs-lisp
+(defun doom-modeline-conditional-buffer-encoding ()
+  "We expect the encoding to be LF UTF-8, so only show the modeline when this is not the case"
+  (setq-local doom-modeline-buffer-encoding
+              (unless (and (memq (plist-get (coding-system-plist buffer-file-coding-system) :category)
+                                 '(coding-category-undecided coding-category-utf-8))
+                           (not (memq (coding-system-eol-type buffer-file-coding-system) '(1 2))))
+                t)))
+
+(add-hook 'after-change-major-mode-hook #'doom-modeline-conditional-buffer-encoding)
+#+end_src
 *** zen
 Enable =mixed-pitch-mode= in org files and scale =doom-variable-pitch-font=.
 Copied from [[https://discourse.doomemacs.org/t/cant-size-doom-variable-pitch-font/4572/2][https://discourse.doomemacs.org/t/cant-size-doom-variable-pitch-font/4572/2]].
@@ -279,6 +319,13 @@ See [[https://protesilaos.com/emacs/spacious-padding]] for configuration options
            :scroll-bar-width 8
            :fringe-width 0))
   (spacious-padding-mode 1))
+#+end_src
+** :editor
+*** evil
+#+begin_src emacs-lisp
+(after! evil
+  (setq evil-move-cursor-back nil       ; don't move the block cursor when toggling insert mode
+        evil-kill-on-visual-paste nil)) ; don't put overwritten text in the kill ring
 #+end_src
 ** :emacs
 *** dired

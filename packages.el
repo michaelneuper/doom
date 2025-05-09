@@ -28,6 +28,9 @@
         "(provide 'org-version)\n"))))
   :pin nil)
 
+(package! org-modern-indent
+  :recipe (:host github :repo "jdtsmith/org-modern-indent"))
+
 (package! org-roam-ui)
 
 ;; PROGRAMMING

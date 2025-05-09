@@ -71,7 +71,7 @@ Set the modifier keys for macos:
       doom-serif-font (font-spec :family "ETBembo" :size 15.5)
       doom-variable-pitch-font (font-spec :family "Latin Modern Roman" :size 15.5)
       doom-emoji-font (font-spec :family "Apple Color Emoji" :size 15.5)
-      doom-symbol-font (font-spec :family "Cascadia Code" :size 15.5))
+      doom-symbol-font (font-spec :family "Symbola"))
 #+end_src
 *** Lines
 Enable relative line numbers and make their slant normal (not italic).
@@ -242,6 +242,26 @@ Copied from [[https://discourse.doomemacs.org/t/cant-size-doom-variable-pitch-fo
 
   (set-face-attribute 'variable-pitch nil :height 1.2))
 #+end_src
+
+Reduce text indent in =org-mode= because of =mixed-pitch-mode=.
+Copied from https://tecosaur.github.io/emacs-config/config.html#reduced-text-indent.
+#+begin_src emacs-lisp
+(defadvice! +org-indent--reduced-text-prefixes ()
+  :after #'org-indent--compute-prefixes
+  (setq org-indent--text-line-prefixes
+        (make-vector org-indent--deepest-level nil))
+  (when (> org-indent-indentation-per-level 0)
+    (dotimes (n org-indent--deepest-level)
+      (aset org-indent--text-line-prefixes
+            n
+            (org-add-props
+                (concat (make-string (* n (1- org-indent-indentation-per-level))
+                                     ?\s)
+                        (if (> n 0)
+                             (char-to-string org-indent-boundary-char)
+                          "\u200b"))
+                nil 'face 'org-indent)))))
+#+end_src
 *** other
 **** spacious-padding
 Add padding to emacs frames and windows with [[doom-package:spacious-padding][spacious-padding]].
@@ -351,6 +371,14 @@ Set some org variables.
       org-highlight-latex-and-related '(native script))
 #+end_src
 
+Some custom faces.
+#+begin_src emacs-lisp
+(after! org
+  (custom-set-faces!
+    '(org-link :weight normal) ; disable bold links
+    '(org-block-begin-line :inherit default :background nil)))
+#+end_src
+
 Scale org headings.
 #+begin_src emacs-lisp
 (after! org
@@ -373,13 +401,6 @@ Scale org headings.
     `((org-level-5)
       :foreground ,(face-attribute 'outline-5 :foreground)
       :weight medium)))
-#+end_src
-
-Disable bold links.
-#+begin_src emacs-lisp
-(after! org
-  (custom-set-faces!
-    '(org-link :weight normal)))
 #+end_src
 
 Enable =evil-tex-mode= in LaTeX source blocks.
@@ -462,7 +483,7 @@ Also https://gist.github.com/karthink/0ac48411a81459c0f3fd7557c4e817db.
       :desc "Rename image at point"
       "C" #'org-download-rename-at-point)
 #+end_src
-**** eye candy
+**** eye candy ([[doom-module:+pretty]])
 =org-modern= config modified from [[https://sophiebos.io/posts/beautifying-emacs-org-mode/][https://sophiebos.io/posts/beautifying-emacs-org-mode/]].
 #+begin_src emacs-lisp
 (after! org-modern
@@ -480,14 +501,58 @@ Also https://gist.github.com/karthink/0ac48411a81459c0f3fd7557c4e817db.
           (800 1000 1200 1400 1600 1800 2000)
           " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
         org-agenda-current-time-string
-        "⭠ now ─────────────────────────────────────────────────"))
+        "⭠ now ─────────────────────────────────────────────────"
+
+        ;; text replacements
+        org-modern-block-name
+        '((t . t)
+          ("src" "──»" "──«")
+          ("example" "─»»" "─««")
+          ("quote" "─ ❝" "─ ❞")
+          ("export" "⏩" "⏪"))
+        org-modern-keyword
+        '((t . t)
+          ("title" . "𝙏")
+          ("subtitle" . "𝙩")
+          ("author" . "𝘼")
+          ("email" . "")
+          ("date" . "𝘿")
+          ("property" . "󰠳")
+          ("options" . #("󰘵" 0 1 (display (height 0.75))))
+          ("startup" . "⏻")
+          ("macro" . "𝓜")
+          ("bind" . "󰌷")
+          ("bibliography" . "")
+          ("print_bibliography" . "󰌱")
+          ("cite_export" . "⮭")
+          ("print_glossary" . "󰌱ᴬᶻ")
+          ("glossary_sources" . "󰒻")
+          ("include" . "⇤")
+          ("setupfile" . "⇚")
+          ("html_head" . "🅷")
+          ("html" . "🅗")
+          ("latex_class" . "🄻")
+          ("latex_class_options" . "🄻󰒓")
+          ("latex_header" . "🅻")
+          ("latex_header_extra" . "🅻⁺")
+          ("latex" . "🅛")
+          ("attr_latex" . "🄛")
+          ("attr_html" . "🄗")
+          ("attr_org" . "⒪")
+          ("call" . "󰜎")
+          ("name" . "⁍")
+          ("header" . "›")
+          ("caption" . "☰")
+          ("results" . "🠶"))))
 
 (after! org-appear
   (setq org-hide-emphasis-markers t
-        org-pretty-entities t
-        org-appear-autoentities t
+        org-pretty-entities nil
+        ;; org-appear-autoentities t
         org-appear-autosubmarkers t
         org-appear-inside-latex t))
+
+(add-hook 'org-mode-hook #'org-modern-indent-mode)
 #+end_src
 **** org-roam
 Set up =org-roam= and =org-roam-ui= along with their keybindings that have the [[kbd:][<leader> r]]  prefix.

@@ -330,17 +330,18 @@ See [[https://protesilaos.com/emacs/spacious-padding]] for configuration options
 ** :emacs
 *** dired
 Set =quick-access-entries= for =dirvish=.
-Ensure the following programs are installed for previews:
-https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#install-dependencies-for-an-enhanced-preview-experience
+Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#install-dependencies-for-an-enhanced-preview-experience][these]] programs are installed to file previews.
 #+begin_src emacs-lisp
 (after! dirvish
   (setq! dirvish-quick-access-entries
-         `(("h" "~/"           "Home")
-           ("e" ,doom-user-dir "Doom config")
+         `(("h" "~/" "Home")
            ("c" "~/Developer/" "Code")
            ("d" "~/Downloads/" "Downloads")
-           ("g" "~/GitHub/"    "GitHub")
-           ("t" "~/.Trash/"    "Trash"))))
+           ("g" "~/GitHub/" "GitHub")
+           ("t" "~/.Trash/" "Trash")
+           ("o" "~/OneDrive - Stellenbosch University/"  "OneDrive")
+           ("n" "/scpx:NARGA:" "NARGA")))) ; `scp` ensures large files are transferred out of band via `scp` rather than encoded in the shell session
+                                           ; `x` ensures the session is opened with `/bin/sh -i` via `-o RemoteCommand`
 
 (map! :leader
       :prefix "o"

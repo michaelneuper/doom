@@ -477,8 +477,9 @@ Also https://gist.github.com/karthink/0ac48411a81459c0f3fd7557c4e817db.
              :page-width 0.8)
   (add-hook 'org-mode-hook 'org-latex-preview-auto-mode)
   (setq org-latex-preview-auto-ignored-commands
-        '(next-line previous-line mwheel-scroll
-          scroll-up-command scroll-down-command)
+        '(next-line previous-line mwheel-scroll ultra-scroll
+          scroll-up-command scroll-down-command
+          evil-scroll-up evil-scroll-down evil-scroll-line-up evil-scroll-line-down)
         org-latex-preview-numbered t
         org-latex-preview-live t
         org-latex-preview-live-debounce 0.25)

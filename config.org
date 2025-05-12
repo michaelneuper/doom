@@ -66,14 +66,14 @@ Some =which-key= adjustments copied from https://tecosaur.github.io/emacs-config
    '(("\\`g s" . "\\`evilem--?motion-\\(.*\\)") . (nil . "◃\\1"))))
 #+end_src
 *** macOS
-Set the modifier keys for macos:
-- =command=: =meta=
-- =right option=: =super=
+Some macOS specific settings.
 #+begin_src emacs-lisp
 (if (featurep :system 'macos)
-  (setq mac-command-modifier 'meta
-        mac-option-modifier 'none
-        mac-right-option-modifier 'super))
+    (setq mac-command-modifier 'meta
+          mac-option-modifier 'none
+          mac-right-option-modifier 'super
+          ns-use-proxy-icon nil ; disable file icon in titlebar
+          ns-use-native-fullscreen t))
 #+end_src
 ** Visual Enchancements
 *** Theme & Fonts
@@ -128,7 +128,7 @@ Copied from [[https://hieuphay.com/doom-emacs-config/#some-good-defaults][https:
         (:eval
          (let ((project-name (projectile-project-name)))
            (unless (string= "-" project-name)
-             (format (if (buffer-modified-p)  " ◉ %s" "  ●  %s") project-name))))))
+             (format (if (buffer-modified-p)  " ◉ %s" " ● %s") project-name))))))
 #+end_src
 * Doom Modules
 ** :completion
@@ -392,6 +392,7 @@ My CDLaTeX templates.
           (?f "\\mathbf" nil t nil nil)
           (?m "\\mathrm" nil t nil nil)
           (?r "\\mathrel" nil t nil nil)
+          (?s "\\mathsf" nil t nil nil)
           (?o "\\operatorname" nil t nil nil))
         cdlatex-command-alist ; expand with <TAB>
         ;; keyword docstring replace hook args textflag mathflag
@@ -423,7 +424,7 @@ Some custom faces.
 #+begin_src emacs-lisp
 (after! org
   (custom-set-faces!
-    '(org-link :weight normal) ; disable bold links
+    '(org-link :weight normal :underline nil) ; disable bold and underlined links
     '(org-block-begin-line :inherit default :background nil)))
 #+end_src
 
@@ -465,10 +466,8 @@ See [[https://abode.karthinks.com/org-latex-preview/][https://abode.karthinks.co
 Also https://gist.github.com/karthink/0ac48411a81459c0f3fd7557c4e817db.
 #+begin_src emacs-lisp
 (after! org
-  (add-to-list 'org-latex-packages-alist '("" "amsmath" t))
-  (add-to-list 'org-latex-packages-alist '("" "amssymb" t))
-  (add-to-list 'org-latex-packages-alist '("" "mathtools" t))
-  (add-to-list 'org-latex-packages-alist '("" "mathrsfs" t)))
+  (dolist (pkg '("amsmath" "amssymb" "mathtools" "mathrsfs" "tikz" "pgfplots"))
+    (add-to-list 'org-latex-packages-alist `("" ,pkg t))))
 
 (use-package! org-latex-preview
   :after org
@@ -564,8 +563,9 @@ Also https://gist.github.com/karthink/0ac48411a81459c0f3fd7557c4e817db.
           ("title" . "𝙏")
           ("subtitle" . "𝙩")
           ("author" . "𝘼")
+          ("filetags" . "")
           ("email" . "")
-          ("date" . "𝘿")
+          ("date" . "󰃭")
           ("property" . "󰠳")
           ("options" . #("󰘵" 0 1 (display (height 0.75))))
           ("startup" . "⏻")

@@ -365,15 +365,36 @@ Add padding to emacs frames and windows with [[doom-package:spacious-padding][sp
 *** evil
 #+begin_src emacs-lisp
 (after! evil
-  (setq evil-move-cursor-back nil       ; don't move the block cursor when toggling insert mode
-        evil-kill-on-visual-paste nil)) ; don't put overwritten text in the kill ring
+  (setq evil-move-cursor-back nil     ; don't move the block cursor when toggling insert mode
+        evil-kill-on-visual-paste nil ; don't put overwritten text in the kill ring
+        evil-want-fine-undo t
+        evil-move-beyond-eol t))
 #+end_src
 ** :emacs
 *** dired
 Set =quick-access-entries= for =dirvish=.
 Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#install-dependencies-for-an-enhanced-preview-experience][these]] programs are installed to file previews.
 #+begin_src emacs-lisp
+(setq dired-mouse-drag-files t
+      mouse-drag-and-drop-region-cross-program t)
+
+(after! dired-x
+  (setq dired-omit-files ; hide "dotfiles"
+        (concat dired-omit-files "\\|^\\..*$")))
+
+;; FIXME not working
+(add-hook! dired-mode (dired-hide-details-mode 1))
+
 (after! dirvish
+  (setq dirvish-attributes
+        (append
+         ;; The order of these attributes is insignificant, they are always
+         ;; displayed in the same position.
+         '(vc-state subtree-state nerd-icons collapse)
+         ;; Other attributes are displayed in the order they appear in this list.
+         '(git-msg file-size)))
+
+
   (setq! dirvish-quick-access-entries
          `(("h" "~/" "Home")
            ("c" "~/Developer/" "Code")
@@ -400,6 +421,19 @@ Improve =eglot= performance.
 (use-package! eglot-booster
   :after eglot
   :config (eglot-booster-mode))
+#+end_src
+*** pdf
+#+begin_src emacs-lisp
+;; TODO add continuous scroll
+(add-hook 'pdf-view-mode-hook #'pdf-view-midnight-minor-mode)
+
+(map! :map pdf-view-mode-map
+      :localleader
+      (:prefix ("h" . "history")
+      :desc "Go forward in history"
+      "f" #'pdf-history-forward
+      :desc "Go backward in history"
+      "b" #'pdf-history-backward))
 #+end_src
 ** :lang
 *** cc

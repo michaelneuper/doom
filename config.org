@@ -765,6 +765,14 @@ Set up =org-roam= and =org-roam-ui= along with their keybindings that have the [
     (run-hooks 'org-roam-insert-node-hook)
     (forward-char)))
 
+;; copied from https://hieuphay.com/doom-emacs-config/#customizing-main-interface
+(defun my/org-roam-node-find-by-mtime ()
+  "Find a node by last modified date."
+  (interactive)
+  (find-file
+   (org-roam-node-file
+    (org-roam-node-read nil nil #'org-roam-node-read-sort-by-file-mtime))))
+
 (map! :map evil-org-mode-map
       :leader
       (:prefix ("r" . "roam")
@@ -775,7 +783,7 @@ Set up =org-roam= and =org-roam-ui= along with their keybindings that have the [
        :desc "Toggle roam buffer"
        "b" #'org-roam-buffer-toggle
        :desc "Find node"
-       "f" #'org-roam-node-find
+       "f" #'my/org-roam-node-find-by-mtime
        :desc "Insert node"
        "i" #'my/org-roam-insert-lowercase
        :desc "Insert node (prompt title)"

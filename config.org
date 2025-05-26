@@ -647,14 +647,20 @@ See https://gist.github.com/karthink/0ac48411a81459c0f3fd7557c4e817db.
       "C" #'org-download-rename-at-point)
 #+end_src
 **** eye candy ([[doom-module:+pretty]])
-=org-modern= config modified from [[https://sophiebos.io/posts/beautifying-emacs-org-mode/][https://sophiebos.io/posts/beautifying-emacs-org-mode/]].
+Requires a nerd font.
 #+begin_src emacs-lisp
+;; modified from https://sophiebos.io/posts/beautifying-emacs-org-mode/
 (after! org-modern
   (setq org-auto-align-tags t
         org-tags-column 0
         org-fold-catch-invisible-edits 'show-and-error
         org-special-ctrl-a/e t
         org-insert-heading-respect-content t
+
+        org-modern-table nil
+        org-modern-todo nil
+        org-modern-priority nil
+        org-modern-progress 6
 
         ;; agenda
         org-agenda-tags-column 0
@@ -667,47 +673,29 @@ See https://gist.github.com/karthink/0ac48411a81459c0f3fd7557c4e817db.
         "⭠ now ─────────────────────────────────────────────────"
 
         ;; text replacements
+        org-modern-fold-stars
+        `(("◉" . "○" )
+          ("◈" . "◇" )
+          ("◉" . "○" )
+          ("◈" . "◇" )
+          ("◉" . "○" ))
+        org-modern-checkbox
+        '((88 . "󰄵")
+          (45 . "󰡖")
+          (32 . "󰄱"))
         org-modern-block-name
         '((t . t)
           ("src" "──»" "──«")
           ("example" "─»»" "─««")
           ("quote" "─ ❝" "─ ❞")
-          ("export" "⏩" "⏪"))
-        org-modern-keyword
-        '((t . t)
-          ("title" . "𝙏")
-          ("subtitle" . "𝙩")
-          ("author" . "𝘼")
-          ("filetags" . "")
-          ("email" . "")
-          ("date" . "󰃭")
-          ("property" . "󰠳")
-          ("options" . #("󰘵" 0 1 (display (height 0.75))))
-          ("startup" . "⏻")
-          ("macro" . "𝓜")
-          ("bind" . "󰌷")
-          ("bibliography" . "")
-          ("print_bibliography" . "󰌱")
-          ("cite_export" . "⮭")
-          ("print_glossary" . "󰌱ᴬᶻ")
-          ("glossary_sources" . "󰒻")
-          ("include" . "⇤")
-          ("setupfile" . "⇚")
-          ("html_head" . "🅷")
-          ("html" . "🅗")
-          ("latex_class" . "🄻")
-          ("latex_class_options" . "🄻󰒓")
-          ("latex_header" . "🅻")
-          ("latex_header_extra" . "🅻⁺")
-          ("latex" . "🅛")
-          ("attr_latex" . "🄛")
-          ("attr_html" . "🄗")
-          ("attr_org" . "⒪")
-          ("call" . "󰜎")
-          ("name" . "⁍")
-          ("header" . "›")
-          ("caption" . "☰")
-          ("results" . "🠶"))))
+          ("export" "⏩" "⏪")))
+
+  (custom-set-faces!
+    `(org-modern-label :inherit 'fixed-pitch)
+    `(org-modern-tag :height 0.8
+      ;; :inherit 'fixed-pitch
+      :background ,(doom-color 'fg-alt)
+      :foreground ,(doom-color 'bg-alt))))
 
 (after! org-appear
   (setq org-hide-emphasis-markers t

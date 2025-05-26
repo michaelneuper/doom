@@ -53,12 +53,12 @@ Make emacs faster.
 (setq doom-localleader-key "SPC l"
       doom-localleader-alt-key "M-SPC l")
 #+end_src
-
-Some =which-key= adjustments copied from https://tecosaur.github.io/emacs-config/config.html#which-key.
+Some =which-key= adjustments.
 #+begin_src emacs-lisp
 (setq which-key-idle-delay 0.5
       which-key-allow-multiple-replacements t)
 
+;; copied from https://tecosaur.github.io/emacs-config/config.html#which-key
 (after! which-key
   (pushnew!
    which-key-replacement-alist
@@ -77,6 +77,8 @@ Some macOS specific settings.
 #+end_src
 ** Visual Enchancements
 *** Theme & Fonts
+#+ATTR_ORG: :width 500
+[[file:images/gruvbox-colorscheme.png]]
 #+begin_src emacs-lisp
 (setq doom-theme 'doom-gruvbox)
 
@@ -89,7 +91,8 @@ Some macOS specific settings.
 *** Lines
 Enable relative line numbers and make their slant normal (not italic).
 #+begin_src emacs-lisp
-(setq display-line-numbers-type 'relative) ;; TODO change to 'visual in org-mode
+;; FIXME incorrect numbers when org headings are folded
+(setq display-line-numbers-type 'relative)
 
 (add-hook! display-line-numbers-mode
   (custom-set-faces!
@@ -115,20 +118,22 @@ Start emacs in a 100x40 window.
 #+end_src
 
 Format the title.
-Copied from [[https://hieuphay.com/doom-emacs-config/#some-good-defaults][https://hieuphay.com/doom-emacs-config/#some-good-defaults]].
 #+begin_src emacs-lisp
-(setq frame-title-format
-      '(""
-        (:eval
-         (if (s-contains-p org-roam-directory (or buffer-file-name ""))
-             (replace-regexp-in-string
-              ".*/[0-9]*-?" "☰ "
-              (subst-char-in-string ?_ ?  buffer-file-name))
-           "%b"))
-        (:eval
-         (let ((project-name (projectile-project-name)))
-           (unless (string= "-" project-name)
-             (format (if (buffer-modified-p)  " ◉ %s" " ● %s") project-name))))))
+;; copied from https://hieuphay.com/doom-emacs-config/#some-good-defaults
+;; (setq frame-title-format
+;;       '(""
+;;         (:eval
+;;          (if (s-contains-p org-roam-directory (or buffer-file-name ""))
+;;              (replace-regexp-in-string
+;;               ".*/[0-9]*-?" "☰ "
+;;               (subst-char-in-string ?_ ?  buffer-file-name))
+;;            "%b"))
+;;         (:eval
+;;          (let ((project-name (projectile-project-name)))
+;;            (unless (string= "-" project-name)
+;;              (format (if (buffer-modified-p)  " ◉ %s" " ● %s") project-name))))))
+
+(setq frame-title-format nil) ; no title
 #+end_src
 * Doom Modules
 ** :completion
@@ -188,7 +193,8 @@ Add keybindings for [[https:https://github.com/copilot-emacs/copilot.el][copilot
 #+end_src
 *** doom-dashboard
 Customise the dashboard.
-Copied from [[https://discourse.doomemacs.org/t/how-to-change-your-splash-screen/57][https://discourse.doomemacs.org/t/how-to-change-your-splash-screen/57]].
+#+ATTR_ORG: :width 350
+[[file:images/dashboard.png]]
 #+begin_src emacs-lisp
 (remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-shortmenu)
 
@@ -240,8 +246,8 @@ Customise the modeline according to [[https://github.com/seagle0128/doom-modelin
 #+end_src
 
 Change the filename showed in the modline in an =org-roam= buffer.
-Modified from https://tecosaur.github.io/emacs-config/config.html#modeline-file-name.
 #+begin_src emacs-lisp
+;; modified from https://tecosaur.github.io/emacs-config/config.html#modeline-file-name
 (defadvice! doom-modeline--buffer-file-name-roam-aware-a (orig-fun)
   :around #'doom-modeline-buffer-file-name ; takes no args
   (if (string-match-p (regexp-quote org-roam-directory) (or buffer-file-name ""))
@@ -253,8 +259,8 @@ Modified from https://tecosaur.github.io/emacs-config/config.html#modeline-file-
 #+end_src
 
 Only show file encoding in modeline when it's not =LF UTF-8=.
-Copied from https://tecosaur.github.io/emacs-config/config.html#file-encoding.
 #+begin_src emacs-lisp
+;; copied from https://tecosaur.github.io/emacs-config/config.html#file-encoding
 (defun doom-modeline-conditional-buffer-encoding ()
   "We expect the encoding to be LF UTF-8, so only show the modeline when this is not the case"
   (setq-local doom-modeline-buffer-encoding
@@ -267,7 +273,6 @@ Copied from https://tecosaur.github.io/emacs-config/config.html#file-encoding.
 #+end_src
 *** zen
 Enable =mixed-pitch-mode= in org files and scale =doom-variable-pitch-font=.
-Copied from [[https://discourse.doomemacs.org/t/cant-size-doom-variable-pitch-font/4572/2][https://discourse.doomemacs.org/t/cant-size-doom-variable-pitch-font/4572/2]].
 #+begin_src emacs-lisp
 (add-hook! 'org-mode-hook #'mixed-pitch-mode)
 
@@ -284,8 +289,8 @@ Copied from [[https://discourse.doomemacs.org/t/cant-size-doom-variable-pitch-fo
 #+end_src
 
 Reduce text indent in =org-mode= because of =mixed-pitch-mode=.
-Copied from https://tecosaur.github.io/emacs-config/config.html#reduced-text-indent.
 #+begin_src emacs-lisp
+;; copied from https://tecosaur.github.io/emacs-config/config.html#reduced-text-indent
 (defadvice! +org-indent--reduced-text-prefixes ()
   :after #'org-indent--compute-prefixes
   (setq org-indent--text-line-prefixes
@@ -340,8 +345,11 @@ Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#in
            ("g" "~/GitHub/" "GitHub")
            ("t" "~/.Trash/" "Trash")
            ("o" "~/OneDrive - Stellenbosch University/"  "OneDrive")
-           ("n" "/scpx:NARGA:" "NARGA")))) ; `scp` ensures large files are transferred out of band via `scp` rather than encoded in the shell session
-                                           ; `x` ensures the session is opened with `/bin/sh -i` via `-o RemoteCommand`
+            ;; - `scp` ensures large files are transferred out of band
+            ;;    via `scp` rather than encoded in the shell session.
+            ;; - `x` ensures the session is opened with `/bin/sh -i`
+            ;;    via `-o RemoteCommand`.
+           ("n" "/scpx:NARGA:" "NARGA"))))
 
 (map! :leader
       :prefix "o"
@@ -370,6 +378,18 @@ Set indentation level for =java-mode= to 2.
 (after! java-mode
   (setq c-basic-offset 2))
 #+end_src
+*** python
+Requires [[doom-module::lang python +lsp][eglot]].
+*NOTE*: Requires =pyright= to be installed.
+Install with ~npm install -g pyright~.
+#+begin_src emacs-lisp
+(after! eglot
+  (add-to-list 'eglot-server-programs '(python-mode . ("pyright-langserver" "--stdio"))))
+
+(add-hook! python-mode
+  (setq python-shell-interpreter "python3.12"
+        doom-modeline-env-python-executable "python3.12"))
+#+end_src
 *** latex
 My CDLaTeX templates.
 #+begin_src emacs-lisp
@@ -378,6 +398,7 @@ My CDLaTeX templates.
         :i "TAB" #'cdlatex-tab)
 
   (setq cdlatex-math-symbol-alist ; expand when prefixed with `
+        ;; TODO change prefix key to something like ;
         '((?e ("\\varepsilon" "\\epsilon"))
           (?f ("\\varphi" "\\phi"))
           (?0 ("\\varnothing" "\\emptyset"))
@@ -386,7 +407,6 @@ My CDLaTeX templates.
           (?| ("\\mid" "\\vert"))
           (?: ("\\coloneqq")))
         cdlatex-math-modify-alist ; modify text with '
-        ;; key mathcmd textcmd type rmdot it
         '((?b "\\mathbb" nil t nil nil)
           (?c "\\mathcal" nil t nil nil)
           (?f "\\mathbf" nil t nil nil)
@@ -395,7 +415,6 @@ My CDLaTeX templates.
           (?s "\\mathsf" nil t nil nil)
           (?o "\\operatorname" nil t nil nil))
         cdlatex-command-alist ; expand with <TAB>
-        ;; keyword docstring replace hook args textflag mathflag
         '(("eqn" "Insert an EQUATION* environment template" "" cdlatex-environment ("equation*") t nil)
           ("aln" "Insert an ALIGN* environment template" "" cdlatex-environment ("align*") t nil)
           ("sum" "Insert \\sum\\limits_{}^{}" "\\sum\\limits_{?}^{}" cdlatex-position-cursor nil nil t)
@@ -407,7 +426,6 @@ My CDLaTeX templates.
           ("cb" "Insert {}^3" "{?}^3" cdlatex-position-cursor nil nil t)
           ("op" "Insert \\operatorname{}()" "\\operatorname{?}()" cdlatex-position-cursor nil nil t))))
 #+end_src
-*** TODO [[https://github.com/tecosaur/LaTeX-auto-activating-snippets][LaTeX Auto Activating Snippets]]
 *** org
 **** org-mode
 Set some org variables.
@@ -416,8 +434,10 @@ Set some org variables.
       org-use-property-inheritance t ; fix weird issue with src blocks
       org-startup-with-inline-images t
       org-edit-src-content-indentation 0
-      org-startup-with-latex-preview t
       org-highlight-latex-and-related '(native script))
+
+;; FIXME blurry previews when using #+attr_org: :width
+;; (setq org-image-actual-width (/ (display-pixel-width) 3)) ; set images to a third of the width of the screen
 #+end_src
 
 Some custom faces.
@@ -606,6 +626,7 @@ Also https://gist.github.com/karthink/0ac48411a81459c0f3fd7557c4e817db.
 **** org-roam
 Set up =org-roam= and =org-roam-ui= along with their keybindings that have the [[kbd:][<leader> r]]  prefix.
 #+begin_src emacs-lisp
+;; TODO setup capture templates
 (use-package! org-roam
   :defer t
   :config
@@ -629,7 +650,7 @@ Set up =org-roam= and =org-roam-ui= along with their keybindings that have the [
               #'org-roam-reflinks-section
               #'org-roam-unlinked-references-section)))
 
-;; custom functions for inserting nodes
+;; custom org-roam functions
 (defun my/org-roam--after-point ()
   "If in evil normal state and not at EOL, move one char forward."
   (when (and (bound-and-true-p evil-mode)
@@ -680,16 +701,4 @@ Set up =org-roam= and =org-roam-ui= along with their keybindings that have the [
        "v" #'org-roam-node-visit
        :desc "Open ORUI"
        "u" #'org-roam-ui-open))
-#+end_src
-*** python
-Requires [[doom-module::lang python +lsp][eglot]].
-*NOTE*: Requires =pyright= to be installed.
-Install with ~npm install -g pyright~.
-#+begin_src emacs-lisp
-(after! eglot
-  (add-to-list 'eglot-server-programs '(python-mode . ("pyright-langserver" "--stdio"))))
-
-(add-hook! python-mode
-  (setq python-shell-interpreter "python3.12"
-        doom-modeline-env-python-executable "python3.12"))
 #+end_src

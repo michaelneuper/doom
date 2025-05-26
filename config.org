@@ -567,20 +567,28 @@ Requires [[doom-module::lang latex]] to be enabled.
               (evil-tex-mode 1))))
 #+end_src
 
-Setup LaTeX previews in =org-mode=.
-See [[https://abode.karthinks.com/org-latex-preview/][https://abode.karthinks.com/org-latex-preview/]] for configuration.
-Also https://gist.github.com/karthink/0ac48411a81459c0f3fd7557c4e817db.
+Setup LaTeX previews in =org-mode=, =org-roam-mode= and =LaTeX-mode=.
+See https://gist.github.com/karthink/0ac48411a81459c0f3fd7557c4e817db.
 #+begin_src emacs-lisp
+;; see https://www.reddit.com/r/emacs/comments/1kl3y9t/comment/ms22hyk/
+;; TODO add snippet for inserting tikz
+;; TODO enable latex previews in org-roam buffer
 (after! org
-  (dolist (pkg '("amsmath" "amssymb" "mathtools" "mathrsfs" "tikz" "pgfplots"))
+  (dolist (pkg '("amsmath" "amssymb" "mathtools" "mathrsfs"))
     (add-to-list 'org-latex-packages-alist `("" ,pkg t))))
 
+;; ;; modified from https://abode.karthinks.com/org-latex-preview/
 (use-package! org-latex-preview
   :after org
+  ;; :hook (org-mode . org-latex-preview-auto-mode)
   :config
   (plist-put org-latex-preview-appearance-options
-             :page-width 0.8)
+             ;; :page-width 0.8)
+             :page-width 1.0)
+
   (add-hook 'org-mode-hook 'org-latex-preview-auto-mode)
+  (setq org-startup-with-latex-preview t)
+
   (setq org-latex-preview-auto-ignored-commands
         '(next-line previous-line mwheel-scroll ultra-scroll
           scroll-up-command scroll-down-command
@@ -626,9 +634,10 @@ Also https://gist.github.com/karthink/0ac48411a81459c0f3fd7557c4e817db.
 **** org-download (dragndrop)
 #+begin_src emacs-lisp
 (after! org-download
+  ;; FIXME image dir changes to 'assets'
+  (setq-default org-download-image-dir "images")
   (setq org-download-method 'directory
-        org-download-image-dir "images"
-        org-download-link-format (format "[[file:%s/%%s]]" org-download-image-dir)
+        org-download-link-format"[[file:images/%s]]\n"
         org-download-heading-lvl nil))
 
 (map! :map org-mode-map

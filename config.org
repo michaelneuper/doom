@@ -82,9 +82,10 @@ Some macOS specific settings.
 #+begin_src emacs-lisp
 (setq doom-theme 'doom-gruvbox)
 
-(setq doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 15.5)
-      doom-serif-font (font-spec :family "ETBembo" :size 15.5)
-      doom-variable-pitch-font (font-spec :family "Latin Modern Roman" :size 15.5)
+(setq doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 15)
+      doom-serif-font (font-spec :family "Helvetica" :size 15.5)
+      ;; doom-variable-pitch-font (font-spec :family "Latin Modern Roman" :size 15.5)
+      doom-variable-pitch-font (font-spec :family "Inter" :size 14.5)
       doom-emoji-font (font-spec :family "Apple Color Emoji" :size 15.5)
       doom-symbol-font (font-spec :family "Symbola"))
 #+end_src
@@ -93,6 +94,7 @@ Enable relative line numbers and make their slant normal (not italic).
 #+begin_src emacs-lisp
 ;; FIXME incorrect numbers when org headings are folded
 (setq display-line-numbers-type 'relative)
+(setq-default line-spacing 0.1)
 
 (add-hook! display-line-numbers-mode
   (custom-set-faces!
@@ -274,7 +276,9 @@ Only show file encoding in modeline when it's not =LF UTF-8=.
 *** zen
 Enable =mixed-pitch-mode= in org files and scale =doom-variable-pitch-font=.
 #+begin_src emacs-lisp
-(add-hook! 'org-mode-hook #'mixed-pitch-mode)
+;; copied from https://discourse.doomemacs.org/t/cant-size-doom-variable-pitch-font/4572/2
+(add-hook! (org-mode org-roam-mode LaTeX-mode)
+           #'mixed-pitch-mode)
 
 (after! mixed-pitch
   (setq mixed-pitch-set-height t
@@ -285,7 +289,8 @@ Enable =mixed-pitch-mode= in org files and scale =doom-variable-pitch-font=.
             'org-drawer 'org-cite-key 'org-list-dt 'org-hide
             'corfu-default 'font-latex-math-face)
 
-  (set-face-attribute 'variable-pitch nil :height 1.2))
+  ;; (set-face-attribute 'variable-pitch nil :height 1.2))
+  (set-face-attribute 'variable-pitch nil :height 1.0))
 #+end_src
 
 Reduce text indent in =org-mode= because of =mixed-pitch-mode=.
@@ -310,17 +315,17 @@ Reduce text indent in =org-mode= because of =mixed-pitch-mode=.
 *** other
 **** spacious-padding
 Add padding to emacs frames and windows with [[doom-package:spacious-padding][spacious-padding]].
-See [[https://protesilaos.com/emacs/spacious-padding]] for configuration options.
 #+begin_src emacs-lisp
+;; https://protesilaos.com/emacs/spacious-padding
 (use-package! spacious-padding
   :ensure t
   :config
   (setq spacious-padding-widths
-        '( :internal-border-width 15
+        '( :internal-border-width 20
            :header-line-width 4
-           :mode-line-width 4
+           :mode-line-width 2
            :tab-width 4
-           :right-divider-width 30
+           :right-divider-width 1
            :scroll-bar-width 8
            :fringe-width 0))
   (spacious-padding-mode 1))
@@ -440,34 +445,50 @@ Set some org variables.
 ;; (setq org-image-actual-width (/ (display-pixel-width) 3)) ; set images to a third of the width of the screen
 #+end_src
 
+By using native highlighting the =org-face= gets added which we want to avoid.
+#+begin_src emacs-lisp
+(after! org-src
+  (add-to-list 'org-src-block-faces
+               `("latex" (:background ,(doom-color 'bg)
+                          :extend t))))
+#+end_src
+
 Some custom faces.
 #+begin_src emacs-lisp
 (after! org
   (custom-set-faces!
-    '(org-link :weight normal :underline nil) ; disable bold and underlined links
-    '(org-block-begin-line :inherit default :background nil)))
-#+end_src
+    ;; `((highlight)
+    ;;   :background ,(doom-color 'blue)
+    ;;   :foreground ,(doom-color 'bg))
+    `((org-link)
+      :weight normal)
+    ;;   :foreground ,(doom-color 'blue))
+    `((org-block-begin-line)
+      :inherit default
+      :background nil)
 
-Scale org headings.
-#+begin_src emacs-lisp
-(after! org
-  (custom-set-faces!
+    ;; scale headings
     `((org-document-title)
-      :foreground ,(face-attribute 'org-document-title :foreground)
+      :foreground ,(doom-color 'fg)
       :height 1.3 :weight bold)
     `((org-level-1)
+      ;; :foreground ,(doom-color 'green)
       :foreground ,(face-attribute 'outline-1 :foreground)
       :height 1.1 :weight medium)
     `((org-level-2)
+      ;; :foreground ,(doom-color 'yellow)
       :foreground ,(face-attribute 'outline-2 :foreground)
       :weight medium)
     `((org-level-3)
+      ;; :foreground ,(doom-color 'dark-yellow)
       :foreground ,(face-attribute 'outline-3 :foreground)
       :weight medium)
     `((org-level-4)
+      ;; :foreground ,(doom-color 'orange)
       :foreground ,(face-attribute 'outline-4 :foreground)
       :weight medium)
     `((org-level-5)
+      ;; :foreground ,(doom-color 'red)
       :foreground ,(face-attribute 'outline-5 :foreground)
       :weight medium)))
 #+end_src

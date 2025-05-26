@@ -199,9 +199,27 @@ Customise the dashboard.
 [[file:images/dashboard.png]]
 #+begin_src emacs-lisp
 (remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-shortmenu)
+(remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-footer)
 
+;; copied from https://github.com/emacs-dashboard/emacs-dashboard/blob/master/dashboard-widgets.el
+(defcustom my/dashboard-footer-messages
+  '("The one true editor, Emacs!"
+    "Who the hell uses VIM anyway? Go Evil!"
+    "Free as free speech, free as free Beer"
+    "Happy coding!"
+    "Vi Vi Vi, the editor of the beast"
+    "Welcome to the church of Emacs"
+    "While any text editor can save your files, only Emacs can save your soul"
+    "I showed you my source code, pls respond")
+  "A list of messages, one of which dashboard chooses to display.")
+
+;; modified from https://discourse.doomemacs.org/t/how-to-change-your-splash-screen/57
 (add-hook! '+doom-dashboard-functions :append
-  (insert "\n" (+doom-dashboard--center +doom-dashboard--width "Welcome back to Emacs!"))
+  (let* ((icon (propertize  #(" " 0 1 (display (height 1.5))) 'face `(:foreground ,(doom-color 'grey))))
+         (msg  (nth (random (length my/dashboard-footer-messages))
+                    my/dashboard-footer-messages))
+         (line (concat icon msg)))
+    (insert "\n" (+doom-dashboard--center +doom-dashboard--width line) "\n"))
   (setq mode-line-format nil)
   (hl-line-mode 0)
   (read-only-mode +1))
@@ -232,19 +250,32 @@ Customise the dashboard.
      'face 'doom-dashboard-banner)))
 
 (setq +doom-dashboard-ascii-banner-fn #'my-weebery-is-always-greater)
+(setq fancy-splash-image (concat doom-private-dir "./images/logo.svg"))
 #+end_src
 *** modeline
-Customise the modeline according to [[https://github.com/seagle0128/doom-modeline?tab=readme-ov-file#customize][https://github.com/seagle0128/doom-modeline?tab=readme-ov-file#customize]].
+Customise [[doom-package:doom-modeline][doom-modeline]].
 #+begin_src emacs-lisp
 (after! doom-modeline
-  (setq doom-modeline-buffer-file-name-style 'file-name
+  ;; see https://github.com/seagle0128/doom-modeline?tab=readme-ov-file#customize
+  (setq doom-modeline-buffer-file-name-style 'relative-from-project
         doom-modeline-always-show-macro-register t
         doom-modeline-enable-word-count nil
         doom-modeline-buffer-encoding t
         doom-modeline-major-mode-icon t
-        doom-modeline-bar-width 0
-        doom-modeline-height 25
-        doom-modeline-modal nil))
+        doom-modeline-bar-width 4
+        doom-modeline-height 30
+        doom-modeline-modal nil)
+
+  ;; see https://discourse.doomemacs.org/t/how-to-switch-customize-or-write-themes/37#tweak-the-current-theme-3
+  (custom-set-faces!
+    `(mode-line :background ,(doom-color 'base3)
+      :foreground ,(doom-color 'fg))
+    `(mode-line-inactive :box nil)
+      ;; (:line-width 2))
+    `(mode-line-active :box nil
+      ;; (:line-width 2 :color ,(doom-color 'base4))
+      ;; :overline ,(doom-color 'base4)
+      :foreground ,(doom-color 'fg))))
 #+end_src
 
 Change the filename showed in the modline in an =org-roam= buffer.

@@ -622,6 +622,10 @@ Also https://gist.github.com/karthink/0ac48411a81459c0f3fd7557c4e817db.
         org-appear-inside-latex t))
 
 (add-hook 'org-mode-hook #'org-modern-indent-mode)
+(add-hook 'org-mode-hook #'valign-mode) ;; fix tables
+
+(after! valign
+  (setq valign-fancy-bar t))
 #+end_src
 **** org-roam
 Set up =org-roam= and =org-roam-ui= along with their keybindings that have the [[kbd:][<leader> r]]  prefix.

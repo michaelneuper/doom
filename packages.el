@@ -31,6 +31,8 @@
 (package! org-modern-indent
   :recipe (:host github :repo "jdtsmith/org-modern-indent"))
 
+(package! valign)
+
 (package! org-roam-ui)
 
 ;; PROGRAMMING
@@ -47,3 +49,4 @@
 (package! solaire-mode :disable t)
 (package! spacious-padding)
 (package! casual)
+(package! colorful-mode)

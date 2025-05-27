@@ -1,16 +1,21 @@
-name: "Export"
-on: [push]
+name: Publish Org Config
+
+on:
+  push:
+    branches:
+      - main  # or your default branch
 
 jobs:
-  export:
+  publish:
     runs-on: ubuntu-latest
-    - name: Checkout
-      uses: actions/checkout@v2
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-- name: Export Org files to GitHub Pages
-  uses: tecosaur/org-knit-action@v0.3
-  with:
-    github_token: ${{ secrets.GITHUB_TOKEN }}
-    branch: gh-pages
-    # add PDFs
-    # export: html, pdf
+      - name: Export Org Files
+        uses: tecosaur/org-knit-action@v0.3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
+          export: html
+          files: config.org

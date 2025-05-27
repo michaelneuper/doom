@@ -19,4 +19,4 @@ jobs:
           branch: gh-pages
           export: html
           files: config.org
-          force-orphan: true
+          force_orphan: true

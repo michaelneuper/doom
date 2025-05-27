@@ -1,2 +1,7 @@
-- name: Org Knit
+- name: Export Org files to GitHub Pages
   uses: tecosaur/org-knit-action@v0.3
+  with:
+    github_token: ${{ secrets.GITHUB_TOKEN }}
+    branch: gh-pages
+    # add PDFs
+    # export: html, pdf

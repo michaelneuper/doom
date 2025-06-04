@@ -629,9 +629,6 @@ Customise =org= faces to for links and src blocks and scale headings.
       :foreground nil
       :foreground ,(face-attribute 'highlight :background)
       :background nil)
-    `((org-block-begin-line) ;; TODO add end line for gruvbox light
-      :inherit default
-      :background nil)
 
     ;; scale headings
     `((org-document-title)
@@ -778,13 +775,7 @@ Some eye candy in =org= buffers provided.
         org-modern-list
         '((43 . "•")
           (45 . "–")
-          (42 . "↪"))
-        org-modern-block-name
-        '((t . t)
-          ("src" "──»" "──«")
-          ("example" "─»»" "─««")
-          ("quote" "─ ❝" "─ ❞")
-          ("export" "⏩" "⏪")))
+          (42 . "↪")))
 
   (custom-set-faces!
     ;; FIXME not working
@@ -808,9 +799,23 @@ Some eye candy in =org= buffers provided.
 ***** other
 Modern block styling from [[https://github.com/jdtsmith/org-modern-indent][org-modern-indent]].
 #+begin_src emacs-lisp
-;; TODO disable
-(use-package! org-modern-indent
-  :hook (org-mode . org-modern-indent-mode))
+;; (use-package! org-modern-indent
+;;   :hook (org-mode . org-modern-indent-mode)
+;;   :config
+;;   (custom-set-faces!
+;;     `((org-block-begin-line)
+;;       :inherit default
+;;       :background nil)
+;;     `((org-block-end-line)
+;;       :inherit org-block-begin-line
+;;       :background nil))
+
+;;   (setq org-modern-block-name
+;;         '((t . t)
+;;           ("src" "──»" "──«")
+;;           ("example" "─»»" "─««")
+;;           ("quote" "─ ❝" "─ ❞")
+;;           ("export" "⏩" "⏪"))))
 #+end_src
 
 Align tables with images and hidden markup correctly with [[https://github.com/casouri/valign][valign]].

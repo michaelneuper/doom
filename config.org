@@ -1,14 +1,17 @@
 #+title: Doom Emacs Config
 #+author: Michael Neuper
 
-#+begin_src emacs-lisp
-;;; config.el -*- lexical-binding: t; -*-
-#+end_src
-
 This is my literate doom emacs config.
 [[Basic]] sets up some basic emacs and doom configurations.
-[[Doom Modules]] contains the configuration for doom's modules ordered by the same order as in =init.el=.
-This section also contains configuration for other packages in =packages.el= under headings that seem appropriate.
+[[Doom Modules]] contains the configuration all packages and tries to mirror the structure of doom's =init.el=.
+
+- Each top-level heading under [[doom modules]] corresponds to a Doom module category (e.g., [[:lang]], [[ui]]), as declared in the =doom!= macro in =init.el=.
+- Each second-level heading  corresponds to an individual module within that category (e.g., [[org]], [[modeline]]).
+- Each third-level heading represents any flags applied to that module (e.g., [[+pretty]], [[+roam2]]), which alter the module’s behavior or dependencies.
+- Subsequent headings:
+  + Core packages enabled by those flags (e.g., [[org-modern]])
+  + Manually installed packages related to that module (e.g., org-modern-indent)
+  + Configuration snippets or tweaks logically grouped by package or functionality
 
 * Contents :toc:
 - [[#basic][Basic]]
@@ -25,6 +28,11 @@ This section also contains configuration for other packages in =packages.el= und
 * Basic
 ** Defaults
 *** Speed
+Make this file run slightly faster (see [[https://nullprogram.com/blog/2016/12/22/][this blog post]]).
+#+begin_src emacs-lisp
+;;; config.el -*- lexical-binding: t; -*-
+#+end_src
+
 Make emacs faster.
 #+begin_src emacs-lisp
 (use-package! gcmh
@@ -53,13 +61,17 @@ Make emacs faster.
 (setq doom-localleader-key "SPC l"
       doom-localleader-alt-key "M-SPC l")
 #+end_src
+
 Some =which-key= adjustments.
 #+begin_src emacs-lisp
-(setq which-key-idle-delay 0.5
-      which-key-allow-multiple-replacements t)
+(use-package! which-key
+  :init
+  (setq which-key-idle-delay 0.5
+        which-key-allow-multiple-replacements t)
+  :config
+  (which-key-mode 1)
 
-;; copied from https://tecosaur.github.io/emacs-config/config.html#which-key
-(after! which-key
+  ;; copied from https://tecosaur.github.io/emacs-config/config.html#which-key
   (pushnew!
    which-key-replacement-alist
    '(("" . "\\`+?evil[-:]?\\(?:a-\\)?\\(.*\\)") . (nil . "◂\\1"))
@@ -67,6 +79,9 @@ Some =which-key= adjustments.
 #+end_src
 *** macOS
 Some macOS specific settings.
+
+- For better font rendering on macos run ~defaults write org.gnu.Emacs AppleFontSmoothing -int 0~
+- To revert run ~defaults delete org.gnu.Emacs AppleFontSmoothing~
 #+begin_src emacs-lisp
 (if (featurep :system 'macos)
     (setq mac-command-modifier 'meta
@@ -77,17 +92,28 @@ Some macOS specific settings.
 #+end_src
 ** Visual Enchancements
 *** Theme & Fonts
+Use the gruvbox theme and set some fonts.
+The fonts need to be installed on your machine and make sure to run ~M-x nerd-icons-install-fonts~.
 #+ATTR_ORG: :width 500
 [[file:images/gruvbox-colorscheme.png]]
 #+begin_src emacs-lisp
 (setq doom-theme 'doom-gruvbox)
 
-(setq doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 15)
-      doom-serif-font (font-spec :family "Helvetica" :size 15.5)
-      ;; doom-variable-pitch-font (font-spec :family "Latin Modern Roman" :size 15.5)
-      doom-variable-pitch-font (font-spec :family "Inter" :size 14.5)
-      doom-emoji-font (font-spec :family "Apple Color Emoji" :size 15.5)
-      doom-symbol-font (font-spec :family "Symbola"))
+(if (featurep :system 'macos)
+    (progn
+      (defconst my/serif-font "New York")
+      (defconst my/sans-serif-font "SF Pro")
+      (defconst my/mono-font "SF Mono"))
+  (progn
+      (defvar my/serif-font "Latin Modern Roman")
+      (defvar my/sans-serif-font "Inter")
+      (defvar my/mono-font "JetBrainsMono Nerd Font")))
+
+;; TODO set tags, #+title etc to sans serif
+;; TODO better unicode fonts see doom unicode module docs <- move to correct heading
+(setq doom-font (font-spec :family my/mono-font :size 15)
+      doom-variable-pitch-font (font-spec :family my/serif-font)
+      doom-emoji-font (font-spec :family "Apple Color Emoji"))
 #+end_src
 *** Lines
 Enable relative line numbers and make their slant normal (not italic).
@@ -102,15 +128,15 @@ Enable relative line numbers and make their slant normal (not italic).
     '(line-number-current-line :slant normal)))
 #+end_src
 
-Disable highlighting of the current line.
+Only highlight  the current line in programming modes and =dired=.
 #+begin_src emacs-lisp
-(setq global-hl-line-modes nil)
+(setq global-hl-line-modes '(prog-mode dired-mode))
 #+end_src
 
 Display a fill indicator at 80 characters in =prog-mode=.
 #+begin_src emacs-lisp
-(setq display-fill-column-indicator-column 80)
-(add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
+;; (setq display-fill-column-indicator-column 80)
+;; (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
 #+end_src
 *** Window
 Start emacs in a 100x40 window.
@@ -135,7 +161,7 @@ Format the title.
 ;;            (unless (string= "-" project-name)
 ;;              (format (if (buffer-modified-p)  " ◉ %s" " ● %s") project-name))))))
 
-(setq frame-title-format nil) ; no title
+(setq frame-title-format '("" (:eval buffer-name) "%b"))
 #+end_src
 * Doom Modules
 ** :completion
@@ -148,7 +174,6 @@ Disable corfu's auto-popups and preselect the first candidate.
         +corfu-want-tab-prefer-expand-snippets t))
 #+end_src
 *** other
-**** copilot
 Add keybindings for [[https:https://github.com/copilot-emacs/copilot.el][copilot]] and [[https://github.com/chep/copilot-chat.el][copilot-chat]] with [[kbd:][<leader> e]]  prefix.
 #+begin_src emacs-lisp
 (after! (evil copilot)
@@ -181,6 +206,7 @@ Add keybindings for [[https:https://github.com/copilot-emacs/copilot.el][copilot
 #+end_src
 ** :ui
 *** deft
+Quickly search and filter through notes.
 #+begin_src emacs-lisp
 (after! deft
   (setq deft-recursive t
@@ -194,13 +220,18 @@ Add keybindings for [[https:https://github.com/copilot-emacs/copilot.el][copilot
       "s" #'deft)
 #+end_src
 *** doom-dashboard
-Customise the dashboard.
 #+ATTR_ORG: :width 350
 [[file:images/dashboard.png]]
+
+Remove the shortmenu and footer from the dashboard.
 #+begin_src emacs-lisp
 (remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-shortmenu)
 (remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-footer)
+#+end_src
 
+Add a random custom message along with the emacs icon in the footer like the [[https://github.com/emacs-dashboard/emacs-dashboard][dashboard]] package.
+Also disable [[modeline]], =hl-line-mode=, and enable =read-only-mode=.
+#+begin_src emacs-lisp
 ;; copied from https://github.com/emacs-dashboard/emacs-dashboard/blob/master/dashboard-widgets.el
 (defcustom my/dashboard-footer-messages
   '("The one true editor, Emacs!"
@@ -213,7 +244,6 @@ Customise the dashboard.
     "I showed you my source code, pls respond")
   "A list of messages, one of which dashboard chooses to display.")
 
-;; modified from https://discourse.doomemacs.org/t/how-to-change-your-splash-screen/57
 (add-hook! '+doom-dashboard-functions :append
   (let* ((icon (propertize  #(" " 0 1 (display (height 1.5))) 'face `(:foreground ,(doom-color 'grey))))
          (msg  (nth (random (length my/dashboard-footer-messages))
@@ -225,7 +255,11 @@ Customise the dashboard.
   (read-only-mode +1))
 
 (setq-hook! '+doom-dashboard-mode-hook evil-normal-state-cursor (list nil))
+#+end_src
 
+Set a custom ascii banner for when emacs is used in the terminal, and a splash image for GUI mode.
+#+begin_src emacs-lisp
+;; modified from https://discourse.doomemacs.org/t/how-to-change-your-splash-screen/57
 (defun my-weebery-is-always-greater ()
   (let* ((banner '("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀"
                    "⢸⠉⣹⠋⠉⢉⡟⢩⢋⠋⣽⡻⠭⢽⢉⠯⠭⠭⠭⢽⡍⢹⡍⠙⣯⠉⠉⠉⠉⠉⣿⢫⠉⠉⠉⢉⡟⠉⢿⢹⠉⢉⣉⢿⡝⡉⢩⢿⣻⢍⠉⠉⠩⢹⣟⡏⠉⠹⡉⢻⡍⡇"
@@ -249,49 +283,53 @@ Customise the dashboard.
                "\n"))
      'face 'doom-dashboard-banner)))
 
-(setq +doom-dashboard-ascii-banner-fn #'my-weebery-is-always-greater)
-(setq fancy-splash-image (concat doom-private-dir "./images/logo.svg"))
+(setq +doom-dashboard-ascii-banner-fn #'my-weebery-is-always-greater
+      fancy-splash-image (concat doom-private-dir "./images/logo.svg"))
 #+end_src
 *** modeline
-Customise [[doom-package:doom-modeline][doom-modeline]].
+Make the modeline look a bit nicer.
 #+begin_src emacs-lisp
+(remove-hook 'doom-modeline-mode-hook #'size-indication-mode)
+
 (after! doom-modeline
   ;; see https://github.com/seagle0128/doom-modeline?tab=readme-ov-file#customize
-  (setq doom-modeline-buffer-file-name-style 'relative-from-project
+  (setq doom-modeline-buffer-file-name-style 'auto
         doom-modeline-always-show-macro-register t
         doom-modeline-enable-word-count nil
         doom-modeline-buffer-encoding t
         doom-modeline-major-mode-icon t
-        doom-modeline-bar-width 4
+        doom-modeline-buffer-modification-icon nil
+        doom-modeline-bar-width 0
         doom-modeline-height 30
         doom-modeline-modal nil)
+        ;; FIXME no padding around nerd icons
 
   ;; see https://discourse.doomemacs.org/t/how-to-switch-customize-or-write-themes/37#tweak-the-current-theme-3
+  ;; FIXME filename sometimes not bold
   (custom-set-faces!
-    `(mode-line :background ,(doom-color 'base3)
-      :foreground ,(doom-color 'fg))
-    `(mode-line-inactive :box nil)
-      ;; (:line-width 2))
+    ;; `(doom-modeline :weight normal
+    ;;   :family ,my/sans-serif-font)
+    `(doom-modeline-buffer-file :foreground ,(doom-color 'fg-alt)
+      :family ,my/sans-serif-font)
+    ;; `(doom-modeline-project-dir :weight bold
+    ;;   :family ,my/sans-serif-font)
+    ;; `(doom-modeline-info :weight bold
+    ;;   :family ,my/sans-serif-font)
+    ;; `(doom-modeline-buffer-path :weight bold
+    ;;   :family ,my/sans-serif-font)
+    `(mode-line :family ,my/sans-serif-font
+      ;; :background ,(doom-color 'base3)
+      :background ,(doom-color 'bg)
+      :overline ,(doom-color 'base4)
+      :foreground ,(doom-color 'fg-alt))
+    `(mode-line-inactive :box nil
+      :overline ,(doom-color 'base4)
+      :family ,my/sans-serif-font)
     `(mode-line-active :box nil
-      ;; (:line-width 2 :color ,(doom-color 'base4))
-      ;; :overline ,(doom-color 'base4)
-      :foreground ,(doom-color 'fg))))
+      :foreground ,(doom-color 'fg-alt))))
 #+end_src
 
-Change the filename showed in the modline in an =org-roam= buffer.
-#+begin_src emacs-lisp
-;; modified from https://tecosaur.github.io/emacs-config/config.html#modeline-file-name
-(defadvice! doom-modeline--buffer-file-name-roam-aware-a (orig-fun)
-  :around #'doom-modeline-buffer-file-name ; takes no args
-  (if (string-match-p (regexp-quote org-roam-directory) (or buffer-file-name ""))
-      (replace-regexp-in-string
-       "\\(?:^\\|.*/\\)\\([0-9]\\{4\\}\\)\\([0-9]\\{2\\}\\)\\([0-9]\\{2\\}\\)[0-9]*-"
-       "(\\1-\\2-\\3) "
-       (subst-char-in-string ?_ ?  buffer-file-name))
-    (funcall orig-fun)))
-#+end_src
-
-Only show file encoding in modeline when it's not =LF UTF-8=.
+We expect the file encoding to be =LF UTF-8= so, only display it in modeline when it's something else.
 #+begin_src emacs-lisp
 ;; copied from https://tecosaur.github.io/emacs-config/config.html#file-encoding
 (defun doom-modeline-conditional-buffer-encoding ()
@@ -304,27 +342,77 @@ Only show file encoding in modeline when it's not =LF UTF-8=.
 
 (add-hook 'after-change-major-mode-hook #'doom-modeline-conditional-buffer-encoding)
 #+end_src
-*** zen
-Enable =mixed-pitch-mode= in org files and scale =doom-variable-pitch-font=.
+
+Change the filename showed in the modline in an =org-roam= buffer to be =(<date>) <name>.org=.
+Only relevant if you have [[+roam2]].
 #+begin_src emacs-lisp
-;; copied from https://discourse.doomemacs.org/t/cant-size-doom-variable-pitch-font/4572/2
-(add-hook! (org-mode org-roam-mode LaTeX-mode)
-           #'mixed-pitch-mode)
+;; TODO show the name of the note instead of the name of the file
+;; modified from https://tecosaur.github.io/emacs-config/config.html#modeline-file-name
+;; (defadvice! doom-modeline--buffer-file-name-roam-aware-a (orig-fun)
+;;   :around #'doom-modeline-buffer-file-name ; takes no args
+;;   (if (string-match-p (regexp-quote org-roam-directory) (or buffer-file-name ""))
+;;       (replace-regexp-in-string
+;;        "\\(?:^\\|.*/\\)\\([0-9]\\{4\\}\\)\\([0-9]\\{2\\}\\)\\([0-9]\\{2\\}\\)[0-9]*-"
+;;        "(\\1-\\2-\\3) "
+;;        (subst-char-in-string ?_ ?  buffer-file-name))
+;;     (funcall orig-fun)))
+#+end_src
+*** tabs
+Disable tabs by default and make them toggleable.
+#+begin_src emacs-lisp
+(use-package! centaur-tabs
+  :init
+  (remove-hook 'doom-first-file-hook #'centaur-tabs-mode)
+  (when (daemonp)
+    (remove-hook 'server-after-make-frame-hook #'centaur-tabs-mode))
 
-(after! mixed-pitch
-  (setq mixed-pitch-set-height t
-        variable-pitch-serif-font doom-variable-pitch-font)
+  (map! :leader
+        :prefix "t"
+        :desc "Tabs"
+        "t" #'centaur-tabs-mode
+        :desc "Local tabs"
+        "T" #'centaur-tabs-local-mode)
+  :config
+  (centaur-tabs-change-fonts my/sans-serif-font 140)
+  :bind
+  ;; TODO add bindings to reorder tabs
+  (:map evil-normal-state-map
+        ("g t" . centaur-tabs-forward)
+        ("g T" . centaur-tabs-backward)))
+#+end_src
+*** unicode
+#+begin_src emacs-lisp
+;; FIXME not showing sf symbols
+(after! unicode
+  (if (featurep :system 'macos)
+      (setq doom-symbol-font (font-spec :family "SF Pro"))))
+#+end_src
+*** zen
+Use =doom-variable-pitch-font= in the following modes:
+- =org-mode=
+- =org-roam-mode= (only relevant if you have [[+roam2]])
+- =LaTeX-mode= (only relevant if you have [[latex]])
+#+begin_src emacs-lisp
+;; modified from https://discourse.doomemacs.org/t/cant-size-doom-variable-pitch-font/4572/2
+;; TODO enable in helpful mode and info mode and doom-docs-org-mode
+(use-package! mixed-pitch
+    :hook ((org-mode      . mixed-pitch-mode)
+           (org-roam-mode . mixed-pitch-mode)
+           (LaTeX-mode    . mixed-pitch-mode))
+    :config
+    (setq mixed-pitch-set-height t
+          variable-pitch-serif-font doom-variable-pitch-font)
 
-  (pushnew! mixed-pitch-fixed-pitch-faces
-            'warning
-            'org-drawer 'org-cite-key 'org-list-dt 'org-hide
-            'corfu-default 'font-latex-math-face)
+    (pushnew! mixed-pitch-fixed-pitch-faces
+              'warning
+              'org-drawer 'org-cite-key 'org-list-dt 'org-hide
+              'corfu-default 'font-latex-math-face)
 
-  ;; (set-face-attribute 'variable-pitch nil :height 1.2))
-  (set-face-attribute 'variable-pitch nil :height 1.0))
+    ;; (set-face-attribute 'variable-pitch nil :height 1.0))
+    (set-face-attribute 'variable-pitch nil :height 1.1))
 #+end_src
 
-Reduce text indent in =org-mode= because of =mixed-pitch-mode=.
+Reduce text indent in =org= buffers caused by =mixed-pitch-mode=.
 #+begin_src emacs-lisp
 ;; copied from https://tecosaur.github.io/emacs-config/config.html#reduced-text-indent
 (defadvice! +org-indent--reduced-text-prefixes ()
@@ -345,7 +433,7 @@ Reduce text indent in =org-mode= because of =mixed-pitch-mode=.
 #+end_src
 *** other
 **** spacious-padding
-Add padding to emacs frames and windows with [[doom-package:spacious-padding][spacious-padding]].
+Add padding to emacs frames and windows with [[https://github.com/protesilaos/spacious-padding][spacious-padding]].
 #+begin_src emacs-lisp
 ;; https://protesilaos.com/emacs/spacious-padding
 (use-package! spacious-padding
@@ -353,27 +441,29 @@ Add padding to emacs frames and windows with [[doom-package:spacious-padding][sp
   :config
   (setq spacious-padding-widths
         '( :internal-border-width 20
-           :header-line-width 4
-           :mode-line-width 2
-           :tab-width 4
-           :right-divider-width 1
-           :scroll-bar-width 8
-           :fringe-width 0))
+           :header-line-width 4 ;; ?
+           :mode-line-width 8
+           :tab-width 4 ;; ?
+           :right-divider-width 15
+           :left-fringe-width 4))
+        ;; spacious-padding-subtle-mode-line t) ;; use custom faces instead
   (spacious-padding-mode 1))
 #+end_src
 ** :editor
 *** evil
+Set some =evil= variables.
 #+begin_src emacs-lisp
 (after! evil
   (setq evil-move-cursor-back nil     ; don't move the block cursor when toggling insert mode
         evil-kill-on-visual-paste nil ; don't put overwritten text in the kill ring
         evil-want-fine-undo t
-        evil-move-beyond-eol t))
+        evil-move-beyond-eol t
+        +evil-want-o/O-to-continue-comments nil))
 #+end_src
 ** :emacs
 *** dired
 Set =quick-access-entries= for =dirvish=.
-Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#install-dependencies-for-an-enhanced-preview-experience][these]] programs are installed to file previews.
+Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#install-dependencies-for-an-enhanced-preview-experience][these]] programs are installed to enable file previews.
 #+begin_src emacs-lisp
 (setq dired-mouse-drag-files t
       mouse-drag-and-drop-region-cross-program t)
@@ -381,9 +471,6 @@ Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#in
 (after! dired-x
   (setq dired-omit-files ; hide "dotfiles"
         (concat dired-omit-files "\\|^\\..*$")))
-
-;; FIXME not working
-(add-hook! dired-mode (dired-hide-details-mode 1))
 
 (after! dirvish
   (setq dirvish-attributes
@@ -414,7 +501,6 @@ Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#in
       "q" #'dirvish-quick-access)
 #+end_src
 ** :tools
-*** lsp
 Improve =eglot= performance.
 *NOTE*: Requires building [[https://github.com/blahgeek/emacs-lsp-booster?tab=readme-ov-file#obtain-or-build-emacs-lsp-booster][emacs-lsp-booster]].
 #+begin_src emacs-lisp
@@ -430,10 +516,10 @@ Improve =eglot= performance.
 (map! :map pdf-view-mode-map
       :localleader
       (:prefix ("h" . "history")
-      :desc "Go forward in history"
-      "f" #'pdf-history-forward
-      :desc "Go backward in history"
-      "b" #'pdf-history-backward))
+       :desc "Go forward in history"
+       "f" #'pdf-history-forward
+       :desc "Go backward in history"
+       "b" #'pdf-history-backward))
 #+end_src
 ** :lang
 *** cc
@@ -448,19 +534,18 @@ Set indentation level for =java-mode= to 2.
 (after! java-mode
   (setq c-basic-offset 2))
 #+end_src
-*** python
-Requires [[doom-module::lang python +lsp][eglot]].
-*NOTE*: Requires =pyright= to be installed.
+*** python +lsp
+Requires [[lsp +eglot]] and requires =pyright= to be installed on your machine.
 Install with ~npm install -g pyright~.
 #+begin_src emacs-lisp
 (after! eglot
   (add-to-list 'eglot-server-programs '(python-mode . ("pyright-langserver" "--stdio"))))
 
 (add-hook! python-mode
-  (setq python-shell-interpreter "python3.12"
-        doom-modeline-env-python-executable "python3.12"))
+  (setq python-shell-interpreter "python3.11"
+        doom-modeline-env-python-executable "python3.11"))
 #+end_src
-*** latex
+*** latex +cdlatex
 My CDLaTeX templates.
 #+begin_src emacs-lisp
 (after! cdlatex
@@ -491,44 +576,39 @@ My CDLaTeX templates.
           ("prod" "Insert \\prod\\limits_{}^{}" "\\prod\\limits_{?}^{}" cdlatex-position-cursor nil nil t)
           ("bun" "Insert \\bigcup\\limits_{}^{}" "\\bigcup\\limits_{?}^{}" cdlatex-position-cursor nil nil t)
           ("bin" "Insert \\bigcap\\limits_{}^{}" "\\bigcap\\limits_{?}^{}" cdlatex-position-cursor nil nil t)
-          ("lim" "Insert \\lim_\\limits{{} \to {}}" "\\lim_\\limits{{?} \to {}}" cdlatex-position-cursor nil nil t)
+          ("lim" "Insert \\lim_\\limits{{} \\to {}}" "\\lim_\\limits{{?} \\to {}}" cdlatex-position-cursor nil nil t)
           ("sr" "Insert {}^2" "{?}^2" cdlatex-position-cursor nil nil t)
           ("cb" "Insert {}^3" "{?}^3" cdlatex-position-cursor nil nil t)
           ("op" "Insert \\operatorname{}()" "\\operatorname{?}()" cdlatex-position-cursor nil nil t))))
 #+end_src
 *** org
 **** org-mode
-Set some org variables.
+Set some =org= variables.
 #+begin_src emacs-lisp
 (setq org-directory "~/Documents/Org"
       org-use-property-inheritance t ; fix weird issue with src blocks
       org-startup-with-inline-images t
-      org-edit-src-content-indentation 0
-      org-highlight-latex-and-related '(native script))
+      org-edit-src-content-indentation 0)
 
 ;; FIXME blurry previews when using #+attr_org: :width
 ;; (setq org-image-actual-width (/ (display-pixel-width) 3)) ; set images to a third of the width of the screen
+      ;; org-image-actual-width (min (/ (display-pixel-width) 3) 800)
 #+end_src
 
-By using native highlighting the =org-face= gets added which we want to avoid.
-#+begin_src emacs-lisp
-(after! org-src
-  (add-to-list 'org-src-block-faces
-               `("latex" (:background ,(doom-color 'bg)
-                          :extend t))))
-#+end_src
-
-Some custom faces.
+Customise =org= faces to for links and src blocks and scale headings.
 #+begin_src emacs-lisp
 (after! org
   (custom-set-faces!
-    ;; `((highlight)
-    ;;   :background ,(doom-color 'blue)
-    ;;   :foreground ,(doom-color 'bg))
     `((org-link)
-      :weight normal)
-    ;;   :foreground ,(doom-color 'blue))
-    `((org-block-begin-line)
+      :weight normal
+      :underline nil)
+      ;; :foreground ,(doom-color 'blue))
+    `((highlight)
+      :underline t
+      :foreground nil
+      :foreground ,(face-attribute 'highlight :background)
+      :background nil)
+    `((org-block-begin-line) ;; TODO add end line for gruvbox light
       :inherit default
       :background nil)
 
@@ -557,37 +637,42 @@ Some custom faces.
       :foreground ,(face-attribute 'outline-5 :foreground)
       :weight medium)))
 #+end_src
-
-Enable =evil-tex-mode= in LaTeX source blocks.
-Requires [[doom-module::lang latex]] to be enabled.
+**** org-latex
+Use native highlighting for =LaTeX=  related syntax in =org= buffers.
+By using native highlighting the =org-face= gets added which we want to avoid.
 #+begin_src emacs-lisp
-(add-hook 'org-src-mode-hook
-          (lambda ()
-            (when (string= major-mode "latex-mode")
-              (evil-tex-mode 1))))
+(setq org-highlight-latex-and-related '(native script))
+
+(after! org-src
+  (add-to-list 'org-src-block-faces
+               `("latex" (:background ,(doom-color 'bg)
+                          :extend t))))
 #+end_src
 
-Setup LaTeX previews in =org-mode=, =org-roam-mode= and =LaTeX-mode=.
-See https://gist.github.com/karthink/0ac48411a81459c0f3fd7557c4e817db.
+Enable =evil-tex-mode= in LaTeX source blocks.
+Requires [[latex]] and [[evil]] to be enabled.
 #+begin_src emacs-lisp
-;; see https://www.reddit.com/r/emacs/comments/1kl3y9t/comment/ms22hyk/
-;; TODO add snippet for inserting tikz
-;; TODO enable latex previews in org-roam buffer
+(add-hook! 'org-src-mode-hook
+  (when (string= major-mode "latex-mode")
+    (evil-tex-mode 1)))
+#+end_src
+
+Set up =LaTeX= previews in =org= buffers.
+#+begin_src emacs-lisp
+;; TODO enable latex previews in org-roam and latex buffers (use xenops)
 (after! org
   (dolist (pkg '("amsmath" "amssymb" "mathtools" "mathrsfs"))
     (add-to-list 'org-latex-packages-alist `("" ,pkg t))))
 
-;; ;; modified from https://abode.karthinks.com/org-latex-preview/
+;; modified from https://abode.karthinks.com/org-latex-preview/
 (use-package! org-latex-preview
   :after org
-  ;; :hook (org-mode . org-latex-preview-auto-mode)
+  :hook (org-mode . org-latex-preview-auto-mode)
+  :init (setq org-startup-with-latex-preview t)
   :config
   (plist-put org-latex-preview-appearance-options
              ;; :page-width 0.8)
              :page-width 1.0)
-
-  (add-hook 'org-mode-hook 'org-latex-preview-auto-mode)
-  (setq org-startup-with-latex-preview t)
 
   (setq org-latex-preview-auto-ignored-commands
         '(next-line previous-line mwheel-scroll ultra-scroll
@@ -631,23 +716,9 @@ See https://gist.github.com/karthink/0ac48411a81459c0f3fd7557c4e817db.
       (remove-hook 'org-latex-preview-overlay-open-functions
                    #'my/org-latex-preview-uncenter))))
 #+end_src
-**** org-download (dragndrop)
-#+begin_src emacs-lisp
-(after! org-download
-  ;; FIXME image dir changes to 'assets'
-  (setq-default org-download-image-dir "images")
-  (setq org-download-method 'directory
-        org-download-link-format"[[file:images/%s]]\n"
-        org-download-heading-lvl nil))
-
-(map! :map org-mode-map
-      :localleader
-      :prefix "a"
-      :desc "Rename image at point"
-      "C" #'org-download-rename-at-point)
-#+end_src
-**** eye candy ([[doom-module:+pretty]])
-Requires a nerd font.
+**** +pretty
+***** org-modern
+Some eye candy in =org= buffers provided.
 #+begin_src emacs-lisp
 ;; modified from https://sophiebos.io/posts/beautifying-emacs-org-mode/
 (after! org-modern
@@ -683,6 +754,10 @@ Requires a nerd font.
         '((88 . "󰄵")
           (45 . "󰡖")
           (32 . "󰄱"))
+        org-modern-list
+        '((43 . "•")
+          (45 . "–")
+          (42 . "↪"))
         org-modern-block-name
         '((t . t)
           ("src" "──»" "──«")
@@ -691,29 +766,59 @@ Requires a nerd font.
           ("export" "⏩" "⏪")))
 
   (custom-set-faces!
-    `(org-modern-label :inherit 'fixed-pitch)
-    `(org-modern-tag :height 0.8
-      ;; :inherit 'fixed-pitch
+    ;; FIXME not working
+    `(org-modern-todo :weight bold)
+    `(org-modern-priority :weight bold)
+    `(org-modern-tag :family ,my/sans-serif-font
+      :height 0.7
       :background ,(doom-color 'fg-alt)
       :foreground ,(doom-color 'bg-alt))))
-
+#+end_src
+***** org-appear
+#+begin_src emacs-lisp
 (after! org-appear
   (setq org-hide-emphasis-markers t
         org-pretty-entities nil
         ;; org-appear-autoentities t
         org-appear-autosubmarkers t
-        org-appear-inside-latex t))
+        org-appear-inside-latex t
+        org-appear-autolinks 'just-brackets))
+#+end_src
+***** other
+Modern block styling from [[https://github.com/jdtsmith/org-modern-indent][org-modern-indent]].
+#+begin_src emacs-lisp
+;; TODO disable
+(use-package! org-modern-indent
+  :hook (org-mode . org-modern-indent-mode))
+#+end_src
 
-(add-hook 'org-mode-hook #'org-modern-indent-mode)
-(add-hook 'org-mode-hook #'valign-mode) ;; fix tables
-
-(after! valign
+Align tables with images and hidden markup correctly with [[https://github.com/casouri/valign][valign]].
+#+begin_src emacs-lisp
+(use-package! valign
+  :hook (org-mode . valign-mode)
+  :config
   (setq valign-fancy-bar t))
 #+end_src
-**** org-roam
+**** +dragndrop
+Customise drag-and-drop support for images and files, insert them into the =images/= directory.
+#+begin_src emacs-lisp
+(after! org-download
+  ;; FIXME image dir changes to 'assets'
+  (setq-default org-download-image-dir "images")
+  (setq org-download-method 'directory
+        org-download-link-format"[[file:images/%s]]\n"
+        org-download-heading-lvl nil))
+
+(map! :map org-mode-map
+      :localleader
+      :prefix "a"
+      :desc "Rename image at point"
+      "C" #'org-download-rename-at-point)
+#+end_src
+**** +roam2
 Set up =org-roam= and =org-roam-ui= along with their keybindings that have the [[kbd:][<leader> r]]  prefix.
 #+begin_src emacs-lisp
-;; TODO setup capture templates
+;; TODO set up capture templates
 (use-package! org-roam
   :defer t
   :config

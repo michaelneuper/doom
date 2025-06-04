@@ -431,6 +431,18 @@ Reduce text indent in =org= buffers caused by =mixed-pitch-mode=.
                           "\u200b"))
                 nil 'face 'org-indent)))))
 #+end_src
+*** workspaces
+#+begin_src emacs-lisp
+;; TODO use unicode symbols for [1], [2], ...
+(after! persp-mode
+  (custom-set-faces!
+    `(+workspace-tab-face :family ,my/sans-serif-font)
+    `(+workspace-tab-selected-face :family ,my/sans-serif-font
+      :weight bold
+      :box (:line-width 1 :color ,(doom-color 'fg-alt) :style nil)
+      :background ,(doom-color 'fg-alt)
+      :foreground ,(doom-color 'bg-alt))))
+#+end_src
 *** other
 **** spacious-padding
 Add padding to emacs frames and windows with [[https://github.com/protesilaos/spacious-padding][spacious-padding]].

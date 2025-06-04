@@ -501,6 +501,15 @@ Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#in
       "q" #'dirvish-quick-access)
 #+end_src
 ** :tools
+*** llm
+#+begin_src emacs-lisp
+;; TODO configure
+(after! gptel
+  (setq gptel-model '4o
+        gptel-backend (gptel-make-gh-copilot "Copilot")
+        gptel-default-mode 'org-mode))
+#+end_src
+*** lsp +eglot
 Improve =eglot= performance.
 *NOTE*: Requires building [[https://github.com/blahgeek/emacs-lsp-booster?tab=readme-ov-file#obtain-or-build-emacs-lsp-booster][emacs-lsp-booster]].
 #+begin_src emacs-lisp

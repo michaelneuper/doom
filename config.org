@@ -109,8 +109,6 @@ The fonts need to be installed on your machine and make sure to run ~M-x nerd-ic
       (defvar my/sans-serif-font "Inter")
       (defvar my/mono-font "JetBrainsMono Nerd Font")))
 
-;; TODO set tags, #+title etc to sans serif
-;; TODO better unicode fonts see doom unicode module docs <- move to correct heading
 (setq doom-font (font-spec :family my/mono-font :size 15)
       doom-variable-pitch-font (font-spec :family my/serif-font)
       doom-emoji-font (font-spec :family "Apple Color Emoji"))
@@ -301,24 +299,16 @@ Make the modeline look a bit nicer.
         doom-modeline-buffer-modification-icon nil
         doom-modeline-bar-width 0
         doom-modeline-height 30
-        doom-modeline-modal nil)
-        ;; FIXME no padding around nerd icons
+        doom-modeline-modal nil
+        doom-modeline-spc-face-overrides `(:family ,my/mono-font))
+
+  (setq mode-line-right-align-edge 'right-fringe)
 
   ;; see https://discourse.doomemacs.org/t/how-to-switch-customize-or-write-themes/37#tweak-the-current-theme-3
-  ;; FIXME filename sometimes not bold
   (custom-set-faces!
-    ;; `(doom-modeline :weight normal
-    ;;   :family ,my/sans-serif-font)
     `(doom-modeline-buffer-file :foreground ,(doom-color 'fg-alt)
       :family ,my/sans-serif-font)
-    ;; `(doom-modeline-project-dir :weight bold
-    ;;   :family ,my/sans-serif-font)
-    ;; `(doom-modeline-info :weight bold
-    ;;   :family ,my/sans-serif-font)
-    ;; `(doom-modeline-buffer-path :weight bold
-    ;;   :family ,my/sans-serif-font)
     `(mode-line :family ,my/sans-serif-font
-      ;; :background ,(doom-color 'base3)
       :background ,(doom-color 'bg)
       :overline ,(doom-color 'base4)
       :foreground ,(doom-color 'fg-alt))
@@ -326,7 +316,8 @@ Make the modeline look a bit nicer.
       :overline ,(doom-color 'base4)
       :family ,my/sans-serif-font)
     `(mode-line-active :box nil
-      :foreground ,(doom-color 'fg-alt))))
+      :foreground ,(doom-color 'fg-alt))
+    `(header-line :overline nil)))
 #+end_src
 
 We expect the file encoding to be =LF UTF-8= so, only display it in modeline when it's something else.
@@ -453,7 +444,7 @@ Add padding to emacs frames and windows with [[https://github.com/protesilaos/sp
   :config
   (setq spacious-padding-widths
         '( :internal-border-width 20
-           :header-line-width 4 ;; ?
+           :header-line-width 8
            :mode-line-width 8
            :tab-width 4 ;; ?
            :right-divider-width 15
@@ -515,7 +506,6 @@ Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#in
 ** :tools
 *** llm
 #+begin_src emacs-lisp
-;; TODO configure
 (after! gptel
   (setq gptel-model '4o
         gptel-backend (gptel-make-gh-copilot "Copilot")
@@ -544,10 +534,13 @@ Improve =eglot= performance.
 #+end_src
 ** :lang
 *** cc
-Set indentation level for =cc-mode= to 2.
+Set indentation level for =cc-mode= to 2 and fix issue where two new lines are inserted after ={=.
 #+begin_src emacs-lisp
 (after! cc-mode
   (setq c-basic-offset 2))
+
+(add-hook! c-mode
+  (c-toggle-auto-newline -1))
 #+end_src
 *** java
 Set indentation level for =java-mode= to 2.
@@ -623,12 +616,11 @@ Customise =org= faces to for links and src blocks and scale headings.
     `((org-link)
       :weight normal
       :underline nil)
-      ;; :foreground ,(doom-color 'blue))
-    `((highlight)
-      :underline t
-      :foreground nil
-      :foreground ,(face-attribute 'highlight :background)
-      :background nil)
+    ;; `((highlight)
+    ;;   :underline t
+    ;;   :foreground nil
+    ;;   :foreground ,(face-attribute 'highlight :background)
+    ;;   :background nil)
 
     ;; scale headings
     `((org-document-title)
@@ -778,9 +770,6 @@ Some eye candy in =org= buffers provided.
           (42 . "↪")))
 
   (custom-set-faces!
-    ;; FIXME not working
-    `(org-modern-todo :weight bold)
-    `(org-modern-priority :weight bold)
     `(org-modern-tag :family ,my/sans-serif-font
       :height 0.7
       :background ,(doom-color 'fg-alt)
@@ -819,6 +808,7 @@ Modern block styling from [[https://github.com/jdtsmith/org-modern-indent][org-m
 #+end_src
 
 Align tables with images and hidden markup correctly with [[https://github.com/casouri/valign][valign]].
+*NOTE*: Can be slow, especially with large =org= files.
 #+begin_src emacs-lisp
 (use-package! valign
   :hook (org-mode . valign-mode)
@@ -828,9 +818,10 @@ Align tables with images and hidden markup correctly with [[https://github.com/c
 **** +dragndrop
 Customise drag-and-drop support for images and files, insert them into the =images/= directory.
 #+begin_src emacs-lisp
-(after! org-download
-  ;; FIXME image dir changes to 'assets'
+(use-package! org-download
+  :init
   (setq-default org-download-image-dir "images")
+  :config
   (setq org-download-method 'directory
         org-download-link-format"[[file:images/%s]]\n"
         org-download-heading-lvl nil))

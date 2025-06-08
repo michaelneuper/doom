@@ -105,9 +105,9 @@ The fonts need to be installed on your machine and make sure to run ~M-x nerd-ic
       (defconst my/sans-serif-font "SF Pro")
       (defconst my/mono-font "SF Mono"))
   (progn
-      (defvar my/serif-font "Latin Modern Roman")
-      (defvar my/sans-serif-font "Inter")
-      (defvar my/mono-font "JetBrainsMono Nerd Font")))
+    (defvar my/serif-font "Latin Modern Roman")
+    (defvar my/sans-serif-font "Inter")
+    (defvar my/mono-font "JetBrainsMono Nerd Font")))
 
 (setq doom-font (font-spec :family my/mono-font :size 15)
       doom-variable-pitch-font (font-spec :family my/serif-font)
@@ -122,8 +122,8 @@ Enable relative line numbers and make their slant normal (not italic).
 
 (add-hook! display-line-numbers-mode
   (custom-set-faces!
-    '(line-number :slant normal)
-    '(line-number-current-line :slant normal)))
+    '((line-number line-number-current-line)
+      :slant normal)))
 #+end_src
 
 Only highlight  the current line in programming modes and =dired=.
@@ -204,7 +204,7 @@ Add keybindings for [[https:https://github.com/copilot-emacs/copilot.el][copilot
 #+end_src
 ** :ui
 *** deft
-Quickly search and filter through notes.
+Quickly search and filter through [[+roam2]] notes.
 #+begin_src emacs-lisp
 (after! deft
   (setq deft-recursive t
@@ -223,8 +223,9 @@ Quickly search and filter through notes.
 
 Remove the shortmenu and footer from the dashboard.
 #+begin_src emacs-lisp
-(remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-shortmenu)
-(remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-footer)
+(remove-hook! '+doom-dashboard-functions
+  #'doom-dashboard-widget-shortmenu
+  #'doom-dashboard-widget-footer)
 #+end_src
 
 Add a random custom message along with the emacs icon in the footer like the [[https://github.com/emacs-dashboard/emacs-dashboard][dashboard]] package.
@@ -282,7 +283,7 @@ Set a custom ascii banner for when emacs is used in the terminal, and a splash i
      'face 'doom-dashboard-banner)))
 
 (setq +doom-dashboard-ascii-banner-fn #'my-weebery-is-always-greater
-      fancy-splash-image (concat doom-private-dir "./images/logo.svg"))
+      fancy-splash-image (concat doom-private-dir "images/logo.svg"))
 #+end_src
 *** modeline
 Make the modeline look a bit nicer.
@@ -306,18 +307,23 @@ Make the modeline look a bit nicer.
 
   ;; see https://discourse.doomemacs.org/t/how-to-switch-customize-or-write-themes/37#tweak-the-current-theme-3
   (custom-set-faces!
-    `(doom-modeline-buffer-file :foreground ,(doom-color 'fg-alt)
+    `(doom-modeline-buffer-file
+      :foreground ,(doom-color 'fg-alt)
       :family ,my/sans-serif-font)
-    `(mode-line :family ,my/sans-serif-font
+    `(mode-line
       :background ,(doom-color 'bg)
-      :overline ,(doom-color 'base4)
-      :foreground ,(doom-color 'fg-alt))
-    `(mode-line-inactive :box nil
+      :foreground ,(doom-color 'fg-alt)
       :overline ,(doom-color 'base4)
       :family ,my/sans-serif-font)
-    `(mode-line-active :box nil
-      :foreground ,(doom-color 'fg-alt))
-    `(header-line :overline nil)))
+    `(mode-line-inactive
+      :overline ,(doom-color 'base4)
+      :family ,my/sans-serif-font
+      :box nil)
+    `(mode-line-active
+      :foreground ,(doom-color 'fg-alt)
+      :box nil)
+    '(header-line
+      :overline nil)))
 #+end_src
 
 We expect the file encoding to be =LF UTF-8= so, only display it in modeline when it's something else.
@@ -366,30 +372,29 @@ Disable tabs by default and make them toggleable.
   :config
   (centaur-tabs-change-fonts my/sans-serif-font 140)
   :bind
-  ;; TODO add bindings to reorder tabs
   (:map evil-normal-state-map
         ("g t" . centaur-tabs-forward)
         ("g T" . centaur-tabs-backward)))
 #+end_src
 *** unicode
 #+begin_src emacs-lisp
-;; FIXME not showing sf symbols
 (after! unicode
   (if (featurep :system 'macos)
-      (setq doom-symbol-font (font-spec :family "SF Pro"))))
+      (setq doom-symbol-font (font-spec :family "Symbola"))))
 #+end_src
 *** zen
 Use =doom-variable-pitch-font= in the following modes:
 - =org-mode=
 - =org-roam-mode= (only relevant if you have [[+roam2]])
 - =LaTeX-mode= (only relevant if you have [[latex]])
+- =doom-docs-org-mode=
 #+begin_src emacs-lisp
 ;; modified from https://discourse.doomemacs.org/t/cant-size-doom-variable-pitch-font/4572/2
-;; TODO enable in helpful mode and info mode and doom-docs-org-mode
 (use-package! mixed-pitch
     :hook ((org-mode      . mixed-pitch-mode)
            (org-roam-mode . mixed-pitch-mode)
-           (LaTeX-mode    . mixed-pitch-mode))
+           (LaTeX-mode    . mixed-pitch-mode)
+           (doom-docs-org-mode . mixed-pitch-mode))
     :config
     (setq mixed-pitch-set-height t
           variable-pitch-serif-font doom-variable-pitch-font)
@@ -399,7 +404,6 @@ Use =doom-variable-pitch-font= in the following modes:
               'org-drawer 'org-cite-key 'org-list-dt 'org-hide
               'corfu-default 'font-latex-math-face)
 
-    ;; (set-face-attribute 'variable-pitch nil :height 1.0))
     (set-face-attribute 'variable-pitch nil :height 1.1))
 #+end_src
 
@@ -427,12 +431,16 @@ Reduce text indent in =org= buffers caused by =mixed-pitch-mode=.
 ;; TODO use unicode symbols for [1], [2], ...
 (after! persp-mode
   (custom-set-faces!
-    `(+workspace-tab-face :family ,my/sans-serif-font)
-    `(+workspace-tab-selected-face :family ,my/sans-serif-font
-      :weight bold
-      :box (:line-width 1 :color ,(doom-color 'fg-alt) :style nil)
+    `(+workspace-tab-face
+      :family ,my/sans-serif-font)
+    `(+workspace-tab-selected-face
+      :box (:color ,(doom-color 'fg-alt)
+            :line-width 1
+            :style nil)
       :background ,(doom-color 'fg-alt)
-      :foreground ,(doom-color 'bg-alt))))
+      :foreground ,(doom-color 'bg-alt)
+      :family ,my/sans-serif-font
+      :weight bold)))
 #+end_src
 *** other
 **** spacious-padding
@@ -448,8 +456,7 @@ Add padding to emacs frames and windows with [[https://github.com/protesilaos/sp
            :mode-line-width 8
            :tab-width 4 ;; ?
            :right-divider-width 15
-           :left-fringe-width 4))
-        ;; spacious-padding-subtle-mode-line t) ;; use custom faces instead
+           :left-fringe-width 8))
   (spacious-padding-mode 1))
 #+end_src
 ** :editor
@@ -478,12 +485,8 @@ Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#in
 (after! dirvish
   (setq dirvish-attributes
         (append
-         ;; The order of these attributes is insignificant, they are always
-         ;; displayed in the same position.
          '(vc-state subtree-state nerd-icons collapse)
-         ;; Other attributes are displayed in the order they appear in this list.
          '(git-msg file-size)))
-
 
   (setq! dirvish-quick-access-entries
          `(("h" "~/" "Home")
@@ -761,6 +764,7 @@ Some eye candy in =org= buffers provided.
           ("◈" . "◇" )
           ("◉" . "○" ))
         org-modern-checkbox
+        ;; requires nerd font
         '((88 . "󰄵")
           (45 . "󰡖")
           (32 . "󰄱"))
@@ -770,10 +774,11 @@ Some eye candy in =org= buffers provided.
           (42 . "↪")))
 
   (custom-set-faces!
-    `(org-modern-tag :family ,my/sans-serif-font
-      :height 0.7
+    `(org-modern-tag
       :background ,(doom-color 'fg-alt)
-      :foreground ,(doom-color 'bg-alt))))
+      :foreground ,(doom-color 'bg-alt)
+      :family ,my/sans-serif-font
+      :height 0.7)))
 #+end_src
 ***** org-appear
 #+begin_src emacs-lisp

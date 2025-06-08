@@ -507,6 +507,11 @@ Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#in
       "q" #'dirvish-quick-access)
 #+end_src
 ** :tools
+*** debugger
+#+begin_src emacs-lisp
+(after! dape
+  (setq dape-breakpoint-margin-string "●")) ;; or use •
+#+end_src
 *** llm
 #+begin_src emacs-lisp
 (after! gptel

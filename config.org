@@ -807,6 +807,7 @@ Align tables with images and hidden markup correctly with [[https://github.com/c
 Customise drag-and-drop support for images and files, insert them into the =images/= directory.
 #+begin_src emacs-lisp
 (use-package! org-download
+  :defer t
   :init
   (setq-default org-download-image-dir "images")
   :config

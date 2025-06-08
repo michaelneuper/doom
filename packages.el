@@ -36,12 +36,6 @@
 (package! org-roam-ui)
 
 ;; PROGRAMMING
-(package! copilot
-  :recipe (:host github :repo "copilot-emacs/copilot.el" :files ("*.el")))
-
-(package! copilot-chat
-  :recipe (:host github :repo "chep/copilot-chat.el" :files ("*.el")))
-
 (package! eglot-booster
   :recipe (:host github :repo "jdtsmith/eglot-booster"))
 

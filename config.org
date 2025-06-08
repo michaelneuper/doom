@@ -171,37 +171,6 @@ Disable corfu's auto-popups and preselect the first candidate.
         corfu-preselect 'first
         +corfu-want-tab-prefer-expand-snippets t))
 #+end_src
-*** other
-Add keybindings for [[https:https://github.com/copilot-emacs/copilot.el][copilot]] and [[https://github.com/chep/copilot-chat.el][copilot-chat]] with [[kbd:][<leader> e]]  prefix.
-#+begin_src emacs-lisp
-(after! (evil copilot)
-  (evil-define-key 'insert 'global (kbd "<tab>") 'copilot-accept-completion))
-
-(map! :leader
-      (:prefix ("e" . "copilot")
-       :desc "Enable Copilot Mode"
-       "c" #'copilot-mode
-       :desc "Display Chat Window"
-       "d" #'copilot-chat-display
-       :desc "Explain Selected Code"
-       "e" #'copilot-chat-explain
-       :desc "Review Selected Code"
-       "r" #'copilot-chat-review
-       :desc "Fix Selected Code"
-       "f" #'copilot-chat-fix
-       :desc "Optimize Selected Code"
-       "o" #'copilot-chat-optimize
-       :desc "Write Test for Code"
-       "t" #'copilot-chat-test
-       :desc "Add Current Buffer"
-       "a" #'copilot-chat-add-current-buffer
-       :desc "Document Selected Code"
-       "D" #'copilot-chat-doc
-       :desc "Reset Chat History"
-       "R" #'copilot-chat-reset
-       :desc "Remove Current Buffer"
-       "x" #'copilot-chat-del-current-buffer))
-#+end_src
 ** :ui
 *** deft
 Quickly search and filter through [[+roam2]] notes.

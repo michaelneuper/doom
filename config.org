@@ -520,6 +520,15 @@ Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#in
         gptel-default-mode 'org-mode))
 #+end_src
 *** lsp +eglot
+Change some of =eglot='s faces.
+#+begin_src emacs-lisp
+(after! eglot
+  (custom-set-faces!
+    `(eglot-inlay-hint-face
+      :foreground ,(doom-color 'base5)
+      :family ,my/sans-serif-font)))
+#+end_src
+
 Improve =eglot= performance.
 *NOTE*: Requires building [[https://github.com/blahgeek/emacs-lsp-booster?tab=readme-ov-file#obtain-or-build-emacs-lsp-booster][emacs-lsp-booster]].
 #+begin_src emacs-lisp

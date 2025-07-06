@@ -39,6 +39,7 @@
 (package! eglot-booster
   :recipe (:host github :repo "jdtsmith/eglot-booster"))
 
+(package! rainbow-delimiters)
 ;; UI
 (package! solaire-mode :disable t)
 (package! spacious-padding)

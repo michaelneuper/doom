@@ -428,6 +428,15 @@ Add padding to emacs frames and windows with [[https://github.com/protesilaos/sp
            :left-fringe-width 8))
   (spacious-padding-mode 1))
 #+end_src
+**** rainbow-delimiters
+Enable rainbow delimiters in most modes.
+#+begin_src emacs-lisp
+;; https://github.com/orgs/doomemacs/projects/5/views/1?pane=issue&itemId=117610828
+(add-hook! '(prog-mode-hook
+             text-mode-hook
+             conf-mode-hook)
+  #'rainbow-delimiters-mode)
+#+end_src
 ** :editor
 *** evil
 Set some =evil= variables.
@@ -546,6 +555,12 @@ Install with ~npm install -g pyright~.
         doom-modeline-env-python-executable "python3.11"))
 #+end_src
 *** latex +cdlatex
+Enable auomatic insertion of braces after sub/superscript in =LaTeX-math-mode=.
+This used to the default behaviour in doom but was changed in commit [[https://github.com/doomemacs/doomemacs/commit/57fcd95e7dd61fcfc235293d7909e7b008466113][57fcd95]].
+#+begin_src emacs-lisp
+(setq TeX-electric-sub-and-superscript t)
+#+end_src
+
 My CDLaTeX templates.
 #+begin_src emacs-lisp
 (after! cdlatex

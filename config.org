@@ -169,6 +169,7 @@ Disable corfu's auto-popups and preselect the first candidate.
 (after! corfu
   (setq corfu-auto nil
         corfu-preselect 'first
+        corfu-preview-current t
         +corfu-want-tab-prefer-expand-snippets t))
 #+end_src
 ** :ui
@@ -198,7 +199,7 @@ Remove the shortmenu and footer from the dashboard.
 #+end_src
 
 Add a random custom message along with the emacs icon in the footer like the [[https://github.com/emacs-dashboard/emacs-dashboard][dashboard]] package.
-Also disable [[modeline]], =hl-line-mode=, and enable =read-only-mode=.
+Also disable [[modeline]] and cursor.
 #+begin_src emacs-lisp
 ;; copied from https://github.com/emacs-dashboard/emacs-dashboard/blob/master/dashboard-widgets.el
 (defcustom my/dashboard-footer-messages
@@ -218,11 +219,11 @@ Also disable [[modeline]], =hl-line-mode=, and enable =read-only-mode=.
                     my/dashboard-footer-messages))
          (line (concat icon msg)))
     (insert "\n" (+doom-dashboard--center +doom-dashboard--width line) "\n"))
-  (setq mode-line-format nil)
-  (hl-line-mode 0)
-  (read-only-mode +1))
 
-(setq-hook! '+doom-dashboard-mode-hook evil-normal-state-cursor (list nil))
+      (setq mode-line-format nil))
+
+(setq-hook! '+doom-dashboard-mode-hook
+   evil-normal-state-cursor (list nil))
 #+end_src
 
 Set a custom ascii banner for when emacs is used in the terminal, and a splash image for GUI mode.

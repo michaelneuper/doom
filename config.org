@@ -535,8 +535,11 @@ Set indentation level for =cc-mode= to 2 and fix issue where two new lines are i
 (after! cc-mode
   (setq c-basic-offset 2))
 
-(add-hook! c-mode
-  (c-toggle-auto-newline -1))
+(after! eglot
+  (add-hook! 'eglot-managed-mode-hook :append
+    (defun +eglot--rm-eglot--post-self-insert-hook ()
+      ;; remove eglot’s post-self-insert-hook in current buffer
+      (remove-hook 'post-self-insert-hook #'eglot--post-self-insert-hook t))))
 #+end_src
 *** java
 Set indentation level for =java-mode= to 2.

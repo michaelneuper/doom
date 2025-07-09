@@ -122,7 +122,9 @@ Enable relative line numbers and make their slant normal (not italic).
 (add-hook! display-line-numbers-mode
   (custom-set-faces!
     '((line-number line-number-current-line)
-      :slant normal)))
+      :slant normal)
+    `(line-number-current-line
+      :background ,(face-attribute 'line-number :background))))
 #+end_src
 
 Only highlight  the current line in programming modes and =dired=.
@@ -292,7 +294,18 @@ Make the modeline look a bit nicer.
       :foreground ,(doom-color 'fg-alt)
       :box nil)
     '(header-line
-      :overline nil)))
+      :overline nil))
+
+  ;; make modeline look like vim in terminal
+  (unless (display-graphic-p)
+    (setq doom-modeline-icon nil)
+
+    (custom-set-faces!
+    `(mode-line
+      :background ,(doom-color 'bg-alt2)
+      :foreground ,(doom-color 'fg))
+    '(doom-modeline-buffer-file
+      :weight normal))))
 #+end_src
 
 We expect the file encoding to be =LF UTF-8= so, only display it in modeline when it's something else.

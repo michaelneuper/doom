@@ -505,11 +505,36 @@ Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#in
   (setq dape-breakpoint-margin-string "●")) ;; or use •
 #+end_src
 *** llm
+Set up =gptel= to use copilot and install some tools from the =llm-tool-collection= package.
 #+begin_src emacs-lisp
 (after! gptel
-  (setq gptel-model '4o
+  (setq gptel-model 'gpt-4.1
         gptel-backend (gptel-make-gh-copilot "Copilot")
-        gptel-default-mode 'org-mode))
+        gptel-default-mode 'org-mode)
+
+  ;; see https://github.com/karthink/gptel/wiki/Tools-collection
+  (gptel-make-tool
+   :function (lambda (command &optional working_dir)
+               (with-temp-message (format "Executing command: `%s`" command)
+                 (let ((default-directory (if (and working_dir (not (string= working_dir "")))
+                                              (expand-file-name working_dir)
+                                            default-directory)))
+                   (shell-command-to-string command))))
+   :name "run_command"
+   :description "Executes a shell command and returns the output as a string. IMPORTANT: This tool allows execution of arbitrary code; user confirmation will be required before any command is run."
+   :args (list
+          '(:name "command"
+            :type string
+            :description "The complete shell command to execute.")
+          '(:name "working_dir"
+            :type string
+            :description "Optional: The directory in which to run the command. Defaults to the current directory if not specified."))
+   :category "command"
+   :confirm t
+   :include t)
+
+  (mapcar (apply-partially #'apply #'gptel-make-tool)
+          (llm-tool-collection-get-all)))
 #+end_src
 *** lsp +eglot
 Change some of =eglot='s faces.

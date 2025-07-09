@@ -38,6 +38,9 @@
 (package! eglot-booster
   :recipe (:host github :repo "jdtsmith/eglot-booster"))
 
+(package! llm-tool-collection
+  :recipe (:host github :repo "skissue/llm-tool-collection"))
+
 ;; UI
 (package! solaire-mode :disable t)
 

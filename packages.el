@@ -32,16 +32,16 @@
   :recipe (:host github :repo "jdtsmith/org-modern-indent"))
 
 (package! valign)
-
 (package! org-roam-ui)
 
 ;; PROGRAMMING
 (package! eglot-booster
   :recipe (:host github :repo "jdtsmith/eglot-booster"))
 
-(package! rainbow-delimiters)
 ;; UI
 (package! solaire-mode :disable t)
+
 (package! spacious-padding)
 (package! casual)
 (package! colorful-mode)
+(package! rainbow-delimiters)

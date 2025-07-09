@@ -80,7 +80,7 @@ Some =which-key= adjustments.
 *** macOS
 Some macOS specific settings.
 
-- For better font rendering on macos run ~defaults write org.gnu.Emacs AppleFontSmoothing -int 0~
+- For thinner fonts on macOS run ~defaults write org.gnu.Emacs AppleFontSmoothing -int 0~
 - To revert run ~defaults delete org.gnu.Emacs AppleFontSmoothing~
 #+begin_src emacs-lisp
 (if (featurep :system 'macos)
@@ -118,7 +118,6 @@ Enable relative line numbers and make their slant normal (not italic).
 #+begin_src emacs-lisp
 ;; FIXME incorrect numbers when org headings are folded
 (setq display-line-numbers-type 'relative)
-(setq-default line-spacing 0.1)
 
 (add-hook! display-line-numbers-mode
   (custom-set-faces!
@@ -447,6 +446,7 @@ Set some =evil= variables.
         evil-kill-on-visual-paste nil ; don't put overwritten text in the kill ring
         evil-want-fine-undo t
         evil-move-beyond-eol t
+        ;; evil-want-minibuffer t
         +evil-want-o/O-to-continue-comments nil))
 #+end_src
 ** :emacs

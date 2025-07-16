@@ -125,7 +125,8 @@ Enable relative line numbers and make their slant normal (not italic).
     '((line-number line-number-current-line)
       :slant normal)
     `(line-number-current-line
-      :background ,(face-attribute 'line-number :background))))
+      :background ,(face-attribute 'line-number :background)
+      :foreground ,(doom-color 'fg))))
 #+end_src
 
 Only highlight  the current line in programming modes and =dired=.

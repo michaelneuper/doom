@@ -462,6 +462,26 @@ Set some =evil= variables.
         ;; evil-want-minibuffer t
         +evil-want-o/O-to-continue-comments nil))
 #+end_src
+*** lispy
+Add a toggle for =lispy-mode=.
+#+begin_src emacs-lisp
+(defun my/toggle-lispy ()
+  "Toggle lispy-mode: enable if off, disable lispy & lispyville if on. Echo the new state in the minibuffer."
+  (interactive)
+  (if lispy-mode
+      (progn
+        (lispy-mode -1)
+        (when (bound-and-true-p lispyville-mode)
+          (lispyville-mode -1))
+        (message "Lispy mode disabled"))
+    (lispy-mode 1)
+    (message "Lispy mode enabled")))
+
+(map! :leader
+      :prefix "t"
+      :desc "Lispy"
+      "L" #'my/toggle-lispy)
+#+end_src
 ** :emacs
 *** dired
 Set =quick-access-entries= for =dirvish=.

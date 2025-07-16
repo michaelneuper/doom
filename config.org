@@ -22,6 +22,7 @@ This is my literate doom emacs config.
   - [[#ui][:ui]]
   - [[#editor][:editor]]
   - [[#emacs][:emacs]]
+  - [[#term][:term]]
   - [[#tools][:tools]]
   - [[#lang][:lang]]
 
@@ -517,6 +518,130 @@ Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#in
       :prefix "o"
       :desc "Dirvish Quick Access"
       "q" #'dirvish-quick-access)
+#+end_src
+** :term
+*** eshell
+Customise eshell:
+- Set custom aliases
+- Set custom prompt
+- Add icons to =eshell/ls= and make links clickable
+#+begin_src emacs-lisp
+(after! eshell
+  ;; ALIASES
+  (set-eshell-alias!
+   "ll" "ls -lAh $*"
+
+   ;; git
+   "gs" "git-st"
+   "ga" "git add $1"
+   "gb" "git branch $1"
+   "gbd" "git branch -D $1"
+   "gcb" "git checkout -b $1"
+   "gch" "git checkout $1"
+   "gc" "git commit -m $1"
+   "gp" "git pull"
+   "gpu" "git push"
+
+   ;; homebrew
+   "bs" "brew search $1"
+   "bi" "brew install $*"
+   "bic" "brew install --cask $*"
+   "bu" "brew update && brew upgrade")
+
+  ;; PROMPT
+  (custom-set-faces!
+    `(+eshell-prompt-pwd
+      :foreground ,(doom-color 'teal)
+      :weight bold)
+    `(+eshell-prompt-git-branch
+      :foreground ,(doom-color 'violet)))
+
+  ;; modified from https://github.com/doomemacs/doomemacs/blob/master/modules/term/eshell/autoload/prompts.el
+  (defun my/+eshell--current-git-branch ()
+    (cl-destructuring-bind (status . output)
+        (doom-call-process "git" "symbolic-ref" "-q" "--short" "HEAD")
+      (if (equal status 0)
+          (format " [ %s]" output)
+        (cl-destructuring-bind (status . output)
+            (doom-call-process "git" "describe" "--all" "--always" "HEAD")
+          (if (equal status 0)
+              (format " [ %s]" output)
+            "")))))
+
+  (defun my/eshell-default-prompt-fn ()
+    (concat (if (bobp) "" "\n")
+            (let ((pwd (eshell/pwd)))
+              (propertize (if (equal pwd "~")
+                              pwd (abbreviate-file-name pwd))
+                          'face '+eshell-prompt-pwd))
+            (propertize (my/+eshell--current-git-branch)
+                        'face '+eshell-prompt-git-branch)
+            (propertize "\nλ" 'face (if (zerop eshell-last-command-status) 'success 'error))
+            " "))
+
+  (setq eshell-prompt-function #'my/eshell-default-prompt-fn)
+
+  ;; ICONS
+  ;; modified from https://www.reddit.com/r/emacs/comments/xboh0y/how_to_put_icons_into_eshell_ls/
+  (defun lem-eshell-prettify (file)
+    "Add features to listings in `eshell/ls' output.
+     The features are:
+     1. Add decoration like 'ls -F':
+        - Mark directories with a `/'
+        - Mark executables with a `*'
+     2. Make each listing into a clickable link to open the
+        corresponding file or directory.
+     3. Add icons (requires `nerd-icons')
+     This function is meant to be used as advice around
+     `eshell-ls-annotate', where FILE is the cons describing the file."
+    (let* ((name (car file))
+           (icon (if (eq (cadr file) t)
+                     (propertize (nerd-icons-icon-for-dir name) 'face 'eshell-ls-directory)
+                   (nerd-icons-icon-for-file name)))
+           (suffix
+            (cond
+             ;; Directory
+             ((eq (cadr file) t) "/")
+             ;; Executable
+             ((and (/= (user-uid) 0) ; root can execute anything
+                   (eshell-ls-applicable (cdr file) 3 #'file-executable-p (car file)))
+              "*"))))
+      (cons
+       (concat icon " "
+               (propertize name
+                           'keymap eshell-ls-file-keymap
+                           'mouse-face 'highlight
+                           'file-name (expand-file-name (substring-no-properties (car file)) default-directory))
+               (when (and suffix (not (string-suffix-p suffix name)))
+                 (propertize suffix 'face 'shadow)))
+       (cdr file))))
+
+  (defun eshell-ls-file-at-point ()
+    "Get the full path of the Eshell listing at point."
+    (get-text-property (point) 'file-name))
+
+  (defun eshell-ls-find-file ()
+    "Open the Eshell listing at point."
+    (interactive)
+    (find-file (eshell-ls-file-at-point)))
+
+  (defun eshell-ls-delete-file ()
+    "Delete the Eshell listing at point."
+    (interactive)
+    (let ((file (eshell-ls-file-at-point)))
+      (when (yes-or-no-p (format "Delete file %s?" file))
+        (delete-file file 'trash))))
+
+  (defvar eshell-ls-file-keymap
+    (let ((map (make-sparse-keymap)))
+      (define-key map (kbd "RET") #'eshell-ls-find-file)
+      (define-key map (kbd "<return>") #'eshell-ls-find-file)
+      (define-key map [mouse-1] #'eshell-ls-find-file)
+      (define-key map (kbd "D") #'eshell-ls-delete-file)
+      map)
+    "Keys in effect when point is over a file from `eshell/ls'.")
+
+  (advice-add #'eshell-ls-annotate :filter-return #'lem-eshell-prettify))
 #+end_src
 ** :tools
 *** debugger

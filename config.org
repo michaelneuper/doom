@@ -72,11 +72,12 @@ Some =which-key= adjustments.
   :config
   (which-key-mode 1)
 
-  ;; copied from https://tecosaur.github.io/emacs-config/config.html#which-key
+  ;; modified from https://tecosaur.github.io/emacs-config/config.html#which-key
   (pushnew!
    which-key-replacement-alist
    '(("" . "\\`+?evil[-:]?\\(?:a-\\)?\\(.*\\)") . (nil . "◂\\1"))
-   '(("\\`g s" . "\\`evilem--?motion-\\(.*\\)") . (nil . "◃\\1"))))
+   '(("\\`g s" . "\\`evilem--?motion-\\(.*\\)") . (nil . "◃\\1"))
+   '(("" . "\\`+?magit[-:]?\\(?:a-\\)?\\(.*\\)") . (nil . "\\1"))))
 #+end_src
 *** macOS
 Some macOS specific settings.
@@ -444,13 +445,13 @@ Add padding to emacs frames and windows with [[https://github.com/protesilaos/sp
   (spacious-padding-mode 1))
 #+end_src
 **** rainbow-delimiters
-Enable rainbow delimiters in most modes.
+Make rainbow delimiters toggleable.
 #+begin_src emacs-lisp
 ;; https://github.com/orgs/doomemacs/projects/5/views/1?pane=issue&itemId=117610828
-(add-hook! '(prog-mode-hook
-             text-mode-hook
-             conf-mode-hook)
-  #'rainbow-delimiters-mode)
+(map! :leader
+      :prefix "t"
+      :desc "Rainbow delimiters"
+      "(" #'rainbow-delimiters-mode)
 #+end_src
 ** :editor
 *** evil
@@ -462,7 +463,9 @@ Set some =evil= variables.
         evil-want-fine-undo t
         evil-move-beyond-eol t
         ;; evil-want-minibuffer t
-        +evil-want-o/O-to-continue-comments nil))
+        +evil-want-o/O-to-continue-comments nil)
+
+  (map! :nv "~" #'repeat))
 #+end_src
 *** lispy
 Add a toggle for =lispy-mode=.
@@ -755,16 +758,17 @@ My CDLaTeX templates.
   (map! :map cdlatex-mode-map
         :i "TAB" #'cdlatex-tab)
 
-  (setq cdlatex-math-symbol-alist ; expand when prefixed with `
+  (setq cdlatex-math-symbol-alist ;; expand when prefixed with `
         ;; TODO change prefix key to something like ;
-        '((?e ("\\varepsilon" "\\epsilon"))
+        '((?' ("`"))
+          (?e ("\\varepsilon" "\\epsilon"))
           (?f ("\\varphi" "\\phi"))
           (?0 ("\\varnothing" "\\emptyset"))
           (?> ("\\to" "\\implies"))
           (?= ("\\iff" "\\equiv"))
           (?| ("\\mid" "\\vert"))
           (?: ("\\coloneqq")))
-        cdlatex-math-modify-alist ; modify text with '
+        cdlatex-math-modify-alist ;; modify text with '
         '((?b "\\mathbb" nil t nil nil)
           (?c "\\mathcal" nil t nil nil)
           (?f "\\mathbf" nil t nil nil)
@@ -772,7 +776,7 @@ My CDLaTeX templates.
           (?r "\\mathrel" nil t nil nil)
           (?s "\\mathsf" nil t nil nil)
           (?o "\\operatorname" nil t nil nil))
-        cdlatex-command-alist ; expand with <TAB>
+        cdlatex-command-alist ;; expand with <TAB>
         '(("eqn" "Insert an EQUATION* environment template" "" cdlatex-environment ("equation*") t nil)
           ("aln" "Insert an ALIGN* environment template" "" cdlatex-environment ("align*") t nil)
           ("sum" "Insert \\sum\\limits_{}^{}" "\\sum\\limits_{?}^{}" cdlatex-position-cursor nil nil t)

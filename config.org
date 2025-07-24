@@ -1053,7 +1053,7 @@ Customise drag-and-drop support for images and files, insert them into the =imag
       "C" #'org-download-rename-at-point)
 #+end_src
 **** +roam2
-Set up =org-roam= and =org-roam-ui= along with their keybindings that have the [[kbd:][<leader> r]]  prefix.
+Set up =org-roam= and =org-roam-ui= along with their keybindings that have the [[kbd:][<leader> r]] prefix.
 #+begin_src emacs-lisp
 ;; TODO set up capture templates
 (use-package! org-roam
@@ -1081,18 +1081,30 @@ Set up =org-roam= and =org-roam-ui= along with their keybindings that have the [
 
 ;; custom org-roam functions
 (defun my/org-roam--after-point ()
-  "If in evil normal state and not at EOL, move one char forward."
+  "If in Evil normal state and not at EOL, move one char forward."
   (when (and (bound-and-true-p evil-mode)
              (evil-normal-state-p)
              (not (eolp)))
     (forward-char)))
+
+(defun my/current-buffer-has-module-tag ()
+  "Return non-nil when this buffer’s #+filetags line contains :module:."
+  (save-excursion
+    (goto-char (point-min))
+    (re-search-forward "^#\\+filetags:.*:module:" nil t)))
+
 (defun my/org-roam-insert-lowercase ()
-  "Insert an org-roam link after point, forcing the link text to lower-case."
+  "Insert an org-roam link after point.
+   Lower-case the link text unless the current buffer is tagged :module:."
   (interactive)
-  (let ((org-roam-node-formatter
-         (lambda (node) (downcase (org-roam-node-title node)))))
+  (let* ((module-context-p (my/current-buffer-has-module-tag))
+         (org-roam-node-formatter
+          (lambda (node)
+            (let ((title (org-roam-node-title node)))
+              (if module-context-p title (downcase title))))))
     (my/org-roam--after-point)
     (call-interactively #'org-roam-node-insert)))
+
 (defun my/org-roam-insert-custom-title ()
   "Pick a node, then prompt for a verbatim link description."
   (interactive)

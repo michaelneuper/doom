@@ -840,6 +840,30 @@ Customise =org= faces to for links and src blocks and scale headings.
       :foreground ,(face-attribute 'outline-5 :foreground)
       :weight medium)))
 #+end_src
+
+Make it easier to fix my mistakes.
+#+begin_src emacs-lisp
+(defun my/org-fix-filetags ()
+  "Rewrite every `#+filetags:` directive in the current buffer so it uses the
+   canonical colon syntax, e.g.
+     #+filetags: tag1 tag2  ->  #+filetags: :tag1:tag2:"
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (while (re-search-forward "^#\\+filetags:\\s-*\\(.*?\\)\\s-*$" nil t)
+      (let* ((line-beg (match-beginning 0))
+             (line-end (match-end 0))
+             (raw      (match-string-no-properties 1))
+             (tags     (split-string raw "[: \t]+" t))
+             (clean    (concat "#+filetags: :"
+                               (string-join tags ":")
+                               ":")))
+        (unless (equal (buffer-substring-no-properties line-beg line-end) clean)
+          (goto-char line-beg)
+          (delete-region line-beg line-end)
+          (insert clean))
+        (forward-line 1)))))
+#+end_src
 **** org-latex
 Use native highlighting for =LaTeX=  related syntax in =org= buffers.
 By using native highlighting the =org-face= gets added which we want to avoid.

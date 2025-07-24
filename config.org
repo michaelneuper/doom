@@ -661,6 +661,12 @@ Set up =gptel= to use copilot and install some tools from the =llm-tool-collecti
         gptel-backend (gptel-make-gh-copilot "Copilot")
         gptel-default-mode 'org-mode)
 
+  (custom-set-faces!
+    `(gptel-context-highlight-face
+      :background ,(doom-color 'bg-alt))
+    `(gptel-context-deletion-face
+      :inherit diff-removed))
+
   ;; see https://github.com/karthink/gptel/wiki/Tools-collection
   (gptel-make-tool
    :function (lambda (command &optional working_dir)
@@ -683,7 +689,13 @@ Set up =gptel= to use copilot and install some tools from the =llm-tool-collecti
    :include t)
 
   (mapcar (apply-partially #'apply #'gptel-make-tool)
-          (llm-tool-collection-get-all)))
+          (llm-tool-collection-get-all))
+
+  (map! :map gptel-mode-map
+        :leader
+        :prefix "ol"
+        :desc "Remove all context"
+        "R" #'gptel-context-remove-all))
 #+end_src
 *** lsp +eglot
 Change some of =eglot='s faces.

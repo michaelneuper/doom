@@ -702,7 +702,12 @@ Customise eshell:
 *** debugger
 #+begin_src emacs-lisp
 (after! dape
-  (setq dape-breakpoint-margin-string "●")) ;; or use •
+  (setq dape-breakpoint-margin-string "●") ;; or use •
+
+  (custom-set-faces!
+    `(dape-inlay-hint-face :inherit dape-inlay-hint-highlight-face
+      :background ,(face-attribute 'hl-line :background))))
+#+end_src
 #+end_src
 *** llm
 Set up =gptel= to use copilot and install some tools from the =llm-tool-collection= package.

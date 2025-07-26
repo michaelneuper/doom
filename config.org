@@ -1,5 +1,6 @@
 #+title: Doom Emacs Config
 #+author: Michael Neuper
+#+startup: content
 
 This is my literate doom emacs config.
 [[Basic]] sets up some basic emacs and doom configurations.
@@ -107,9 +108,9 @@ The fonts need to be installed on your machine and make sure to run ~M-x nerd-ic
       (defconst my/sans-serif-font "SF Pro")
       (defconst my/mono-font "SF Mono"))
   (progn
-    (defvar my/serif-font "Latin Modern Roman")
-    (defvar my/sans-serif-font "Inter")
-    (defvar my/mono-font "JetBrainsMono Nerd Font")))
+    (defconst my/serif-font "Latin Modern Roman")
+    (defconst my/sans-serif-font "Inter")
+    (defconst my/mono-font "JetBrainsMono Nerd Font")))
 
 (setq doom-font (font-spec :family my/mono-font :size 15)
       doom-variable-pitch-font (font-spec :family my/serif-font)
@@ -118,8 +119,8 @@ The fonts need to be installed on your machine and make sure to run ~M-x nerd-ic
 *** Lines
 Enable relative line numbers and make their slant normal (not italic).
 #+begin_src emacs-lisp
-;; FIXME incorrect numbers when org headings are folded
-(setq display-line-numbers-type 'relative)
+;; (setq display-line-numbers-type 'relative)
+(setq display-line-numbers-type 'visual)
 
 (add-hook! display-line-numbers-mode
   (custom-set-faces!
@@ -1070,7 +1071,6 @@ Customise drag-and-drop support for images and files, insert them into the =imag
 **** +roam2
 Set up =org-roam= and =org-roam-ui= along with their keybindings that have the [[kbd:][<leader> r]] prefix.
 #+begin_src emacs-lisp
-;; TODO set up capture templates
 (use-package! org-roam
   :defer t
   :config

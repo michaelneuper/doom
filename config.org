@@ -493,6 +493,57 @@ Add a toggle for =lispy-mode=.
 #+end_src
 ** :emacs
 *** dired
+Define a custom function to quickly find files in favourite directories.
+#+begin_src emacs-lisp
+(defvar my/favorite-dirs
+  '(("h" "~/" "Home")
+    ("c" "~/Developer/" "Code")
+    ("d" "~/Downloads/" "Downloads")
+    ("g" "~/GitHub/" "GitHub")
+    ("t" "~/.Trash/" "Trash")
+    ("o" "~/OneDrive - Stellenbosch University/" "OneDrive")
+    ("n" "/scpx:narga:" "NARGA"))
+  "List of favorite directories in the form (KEY PATH LABEL).")
+
+(defun my/open-favorite-dir ()
+  "Prompt with a single key to jump to a favourite directory."
+  (interactive)
+  (let* ((max-label-width
+          (apply #'max
+                 (mapcar (lambda (entry)
+                           (string-width (nth 2 entry)))
+                         my/favorite-dirs)))
+         (prompt
+          (concat
+           (propertize "Select directory:\n" 'face 'bold)
+           (mapconcat
+            (lambda (entry)
+              (let* ((key (car entry))
+                     (label (nth 2 entry))
+                     (path (nth 1 entry))
+                     ;; pad the label to max width
+                     (padded-label (format (format "%%-%ds" max-label-width) label)))
+                (format
+                 "%s %s  %s"
+                 (propertize key 'face 'success)
+                 (propertize padded-label 'face 'default)
+                 (propertize path 'face 'shadow))))
+            my/favorite-dirs
+            "\n")
+           "\n> "))
+         (key (char-to-string
+               (read-char-choice
+                prompt
+                (mapcar #'string-to-char (mapcar #'car my/favorite-dirs)))))
+         (dir (cadr (assoc key my/favorite-dirs))))
+    (doom-project-browse dir)))
+
+(map! :leader
+      :prefix "f"
+      "q" #'my/open-favorite-dir
+      "d" #'consult-dir)
+#+end_src
+
 Set =quick-access-entries= for =dirvish=.
 Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#install-dependencies-for-an-enhanced-preview-experience][these]] programs are installed to enable file previews.
 #+begin_src emacs-lisp
@@ -500,7 +551,8 @@ Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#in
       mouse-drag-and-drop-region-cross-program t)
 
 (after! dired-x
-  (setq dired-omit-files ; hide "dotfiles"
+  ;; hide "dotfiles"
+  (setq dired-omit-files
         (concat dired-omit-files "\\|^\\..*$")))
 
 (after! dirvish
@@ -509,18 +561,7 @@ Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#in
          '(vc-state subtree-state nerd-icons collapse)
          '(git-msg file-size)))
 
-  (setq! dirvish-quick-access-entries
-         `(("h" "~/" "Home")
-           ("c" "~/Developer/" "Code")
-           ("d" "~/Downloads/" "Downloads")
-           ("g" "~/GitHub/" "GitHub")
-           ("t" "~/.Trash/" "Trash")
-           ("o" "~/OneDrive - Stellenbosch University/"  "OneDrive")
-            ;; - `scp` ensures large files are transferred out of band
-            ;;    via `scp` rather than encoded in the shell session.
-            ;; - `x` ensures the session is opened with `/bin/sh -i`
-            ;;    via `-o RemoteCommand`.
-           ("n" "/scpx:NARGA:" "NARGA"))))
+  (setq! dirvish-quick-access-entries my/favorite-dirs))
 
 (map! :leader
       :prefix "o"

@@ -708,6 +708,9 @@ Customise eshell:
     `(dape-inlay-hint-face :inherit dape-inlay-hint-highlight-face
       :background ,(face-attribute 'hl-line :background))))
 #+end_src
+*** eval
+#+begin_src emacs-lisp
+(setq eros-eval-result-prefix "⇒ ") ;; or use ⟹
 #+end_src
 *** llm
 Set up =gptel= to use copilot and install some tools from the =llm-tool-collection= package.

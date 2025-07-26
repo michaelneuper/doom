@@ -572,6 +572,7 @@ Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#in
 *** eshell
 Customise eshell:
 - Set custom aliases
+- Add an =fzf=-like =C-r= keybinding
 - Set custom prompt
 - Add icons to =eshell/ls= and make links clickable
 #+begin_src emacs-lisp
@@ -579,6 +580,8 @@ Customise eshell:
   ;; ALIASES
   (set-eshell-alias!
    "ll" "ls -lAh $*"
+   "cd" "z $*"
+   "home" "cd ~"
 
    ;; git
    "gs" "git-st"
@@ -596,6 +599,9 @@ Customise eshell:
    "bi" "brew install $*"
    "bic" "brew install --cask $*"
    "bu" "brew update && brew upgrade")
+
+  (map! :map eshell-mode-map
+        :ni "C-r" #'+eshell/search-history)
 
   ;; PROMPT
   (custom-set-faces!

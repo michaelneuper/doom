@@ -455,7 +455,7 @@ Make rainbow delimiters toggleable.
 #+end_src
 ** :editor
 *** evil
-Set some =evil= variables.
+Set some =evil= variables and define some keybindings.
 #+begin_src emacs-lisp
 (after! evil
   (setq evil-move-cursor-back nil     ; don't move the block cursor when toggling insert mode
@@ -465,7 +465,10 @@ Set some =evil= variables.
         ;; evil-want-minibuffer t
         +evil-want-o/O-to-continue-comments nil)
 
-  (map! :nv "~" #'repeat))
+  (map! :nv "~" #'repeat
+        :prefix "g"
+        :nv "y" #'evilnc-copy-and-comment-operator
+        :nv "Y" #'+evil:yank-unindented))
 #+end_src
 *** lispy
 Add a toggle for =lispy-mode=.

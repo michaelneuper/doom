@@ -174,7 +174,7 @@ Disable corfu's auto-popups and preselect the first candidate.
 (after! corfu
   (setq corfu-auto nil
         corfu-preselect 'first
-        corfu-preview-current t
+        corfu-preview-current 'insert
         +corfu-want-tab-prefer-expand-snippets t))
 #+end_src
 ** :ui
@@ -309,7 +309,12 @@ Make the modeline look a bit nicer.
       :background ,(doom-color 'bg-alt2)
       :foreground ,(doom-color 'fg))
     '(doom-modeline-buffer-file
-      :weight normal))))
+      :weight normal)))
+
+  (map! :leader
+        :prefix "t"
+        :desc "Mode line"
+        "m" #'global-hide-mode-line-mode))
 #+end_src
 
 We expect the file encoding to be =LF UTF-8= so, only display it in modeline when it's something else.
@@ -540,6 +545,7 @@ Define a custom function to quickly find files in favourite directories.
 
 (map! :leader
       :prefix "f"
+      :desc "Quick Access"
       "q" #'my/open-favorite-dir
       "d" #'consult-dir)
 #+end_src
@@ -582,6 +588,7 @@ Customise eshell:
    "ll" "ls -lAh $*"
    "cd" "z $*"
    "home" "cd ~"
+   "v" "emacs $*"
 
    ;; git
    "gs" "git-st"
@@ -763,6 +770,7 @@ Change some of =eglot='s faces.
   (custom-set-faces!
     `(eglot-inlay-hint-face
       :foreground ,(doom-color 'base5)
+      :height 0.9
       :family ,my/sans-serif-font)))
 #+end_src
 

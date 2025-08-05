@@ -624,15 +624,45 @@ Customise eshell:
 
   ;; modified from https://github.com/doomemacs/doomemacs/blob/master/modules/term/eshell/autoload/prompts.el
   (defun my/+eshell--current-git-branch ()
-    (cl-destructuring-bind (status . output)
-        (doom-call-process "git" "symbolic-ref" "-q" "--short" "HEAD")
-      (if (equal status 0)
-          (format " [ %s]" output)
-        (cl-destructuring-bind (status . output)
-            (doom-call-process "git" "describe" "--all" "--always" "HEAD")
-          (if (equal status 0)
-              (format " [ %s]" output)
-            "")))))
+    "Return current Git branch prefixed by remote icon, or \"\" if none.
+Formats as: propertized \" at <icon> on  <branch-name>\""
+    (let* (;; probe remote URL
+           (remote-res    (doom-call-process "git" "ls-remote" "--get-url"))
+           (remote-status (car remote-res))
+           (remote-url    (cdr remote-res))
+
+           ;; pick remote icon
+           (icon
+            (cond
+             ((and (zerop remote-status)
+                   (string-match-p "github"    remote-url)) "")
+             ((and (zerop remote-status)
+                   (string-match-p "gitlab"    remote-url)) "")
+             ((and (zerop remote-status)
+                   (string-match-p "bitbucket" remote-url)) "")
+             ((and (zerop remote-status)
+                   (string-match-p "git"       remote-url)) "")
+             (t                                               "")))
+
+           ;; get branch
+           (branch
+            (cl-destructuring-bind (status . output)
+                (doom-call-process "git" "symbolic-ref" "-q" "--short" "HEAD")
+              (if (zerop status)
+                  output
+                (cl-destructuring-bind (s . o)
+                    (doom-call-process "git" "describe" "--all" "--always" "HEAD")
+                  (if (zerop s) o "")))))
+
+           ;; final formatted output
+           (p-branch
+            (when (and branch (not (string-empty-p branch)))
+              (concat
+               (propertize (format " at %s on " icon)
+                           'face 'default)
+               (propertize (format " %s" branch)
+                           'face '+eshell-prompt-git-branch)))))
+      (or p-branch "")))
 
   (defun my/eshell-default-prompt-fn ()
     (concat (if (bobp) "" "\n")
@@ -640,8 +670,7 @@ Customise eshell:
               (propertize (if (equal pwd "~")
                               pwd (abbreviate-file-name pwd))
                           'face '+eshell-prompt-pwd))
-            (propertize (my/+eshell--current-git-branch)
-                        'face '+eshell-prompt-git-branch)
+            (my/+eshell--current-git-branch)
             (propertize "\nλ" 'face (if (zerop eshell-last-command-status) 'success 'error))
             " "))
 

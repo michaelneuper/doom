@@ -963,10 +963,34 @@ Customise =org= faces to for links and src blocks and scale headings.
       :weight medium)))
 #+end_src
 
-Make it easier to fix my mistakes.
+By default, all =org= links are the same colour, lets change that.
+#+begin_src emacs-lisp
+(defconst my/org-link-colors
+  '(("http"  . blue)
+    ("https" . blue)
+    ("file"  . orange)
+    ("pdf"   . orange)
+    ("id"    . violet))
+  "Alist of Org link prefixes and their Doom theme colours.")
+
+(defun my/org-apply-link-colors ()
+  "Register custom faces for Org link schemes based on `my/org-link-colors'."
+  (dolist (entry my/org-link-colors)
+    (let ((scheme (car entry))
+          (color  (cdr entry)))
+      (org-link-set-parameters
+       scheme
+       :face       `(:foreground ,(doom-color color))
+       :mouse-face `(:foreground ,(doom-color 'bg)
+                     :background ,(doom-color color))))))
+
+(after! org (my/org-apply-link-colors))
+#+end_src
+
+Make it easier to fix my past mistakes.
 #+begin_src emacs-lisp
 (defun my/org-fix-filetags ()
-  "Rewrite every `#+filetags:` directive in the current buffer so it uses the
+  "Rewrite every `#+filetags:' directive in the current buffer so it uses the
    canonical colon syntax, e.g.
      #+filetags: tag1 tag2  ->  #+filetags: :tag1:tag2:"
   (interactive)
@@ -979,7 +1003,8 @@ Make it easier to fix my mistakes.
              (tags     (split-string raw "[: \t]+" t))
              (clean    (concat "#+filetags: :"
                                (string-join tags ":")
-                               ":")))
+                               ":"
+                               "\n")))
         (unless (equal (buffer-substring-no-properties line-beg line-end) clean)
           (goto-char line-beg)
           (delete-region line-beg line-end)

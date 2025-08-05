@@ -453,6 +453,10 @@ Add padding to emacs frames and windows with [[https://github.com/protesilaos/sp
 **** rainbow-delimiters
 Make rainbow delimiters toggleable.
 #+begin_src emacs-lisp
+(add-hook! '(emacs-lisp-mode-hook
+             c-mode-hook)
+           #'rainbow-delimiters-mode)
+
 ;; https://github.com/orgs/doomemacs/projects/5/views/1?pane=issue&itemId=117610828
 (map! :leader
       :prefix "t"

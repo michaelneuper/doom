@@ -815,17 +815,45 @@ Improve =eglot= performance.
   :config (eglot-booster-mode))
 #+end_src
 *** pdf
+Automatically enable dark mode in pdfs.
 #+begin_src emacs-lisp
 ;; TODO add continuous scroll
 (add-hook 'pdf-view-mode-hook #'pdf-view-midnight-minor-mode)
+#+end_src
 
+The default resize factor of =1.25= is  a bit too much.
+#+begin_src emacs-lisp
+(after! pdf-view
+  (setq pdf-view-resize-factor 1.1))
+#+end_src
+
+Open pdf links in =org= with =pdf-tools=.
+#+begin_src emacs-lisp
+(after! org
+  (setq org-file-apps
+        (append (remove '("\\.pdf\\'" . default) org-file-apps)
+                '(("\\.pdf\\'" . emacs)))))
+#+end_src
+
+Create some keybindings for commonly used commands.
+#+begin_src emacs-lisp
 (map! :map pdf-view-mode-map
       :localleader
       (:prefix ("h" . "history")
        :desc "Go forward in history"
        "f" #'pdf-history-forward
        :desc "Go backward in history"
-       "b" #'pdf-history-backward))
+       "b" #'pdf-history-backward)
+
+      (:prefix ("a" . "annotations")
+       :desc "Text"
+       "t" #'pdf-annot-add-text-annotation
+       :desc "Markup"
+       "h" #'pdf-annot-add-markup-annotation
+       :desc "Highlight"
+       "h" #'pdf-annot-add-highlight-markup-annotation
+       :desc "Strikeout"
+       "s" #'pdf-annot-add-strikeout-markup-annotation))
 #+end_src
 ** :lang
 *** cc

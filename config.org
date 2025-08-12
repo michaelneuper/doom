@@ -861,13 +861,15 @@ Configure =cc-mode=.
 #+begin_src emacs-lisp
 (after! cc-mode
   (setf (alist-get 'c-mode c-default-style) "k&r")
-  (setq c-basic-offset 2))
+  (setq c-basic-offset 2
+        c-doc-comment-style '((c-mode . doxygen))))
 
-(add-hook 'c-mode-hook
-          (lambda ()
-            (unless (or (file-exists-p "makefile")
-                        (file-exists-p "Makefile"))
-              (setq-local compile-command "cc -Wall -o main main.c"))))
+(add-hook! 'c-mode-common-hook (c-setup-doc-comment-style))
+
+(add-hook! 'c-mode-hook
+  (unless (or (file-exists-p "makefile")
+              (file-exists-p "Makefile"))
+    (setq-local compile-command "cc -Wall -o main main.c")))
 #+end_src
 
  Fix issue where two new lines are inserted after ={=.

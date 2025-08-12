@@ -122,7 +122,7 @@ Enable relative line numbers and make their slant normal (not italic).
 ;; (setq display-line-numbers-type 'relative)
 (setq display-line-numbers-type 'visual)
 
-(add-hook! display-line-numbers-mode
+(add-hook! 'display-line-numbers-mode-hook
   (custom-set-faces!
     '((line-number line-number-current-line)
       :slant normal)
@@ -891,7 +891,7 @@ Install with ~npm install -g pyright~.
 (after! eglot
   (add-to-list 'eglot-server-programs '(python-mode . ("pyright-langserver" "--stdio"))))
 
-(add-hook! python-mode
+(add-hook! 'python-mode-hook
   (setq python-shell-interpreter "python3.11"
         doom-modeline-env-python-executable "python3.11"))
 #+end_src
@@ -948,6 +948,7 @@ Set some =org= variables.
       org-edit-src-content-indentation 0)
 
 ;; FIXME blurry previews when using #+attr_org: :width
+;; this only seems to be an issue when using emacs-plus
 ;; (setq org-image-actual-width (/ (display-pixel-width) 3)) ; set images to a third of the width of the screen
       ;; org-image-actual-width (min (/ (display-pixel-width) 3) 800)
 #+end_src

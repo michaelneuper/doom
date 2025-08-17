@@ -41,6 +41,9 @@
 (package! llm-tool-collection
   :recipe (:host github :repo "skissue/llm-tool-collection"))
 
+(package! highlight-doxygen
+  :recipe (:host github :repo "Lindydancer/highlight-doxygen"))
+
 ;; UI
 (package! solaire-mode :disable t)
 

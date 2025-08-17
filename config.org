@@ -880,6 +880,28 @@ Configure =cc-mode=.
       ;; remove eglot’s post-self-insert-hook in current buffer
       (remove-hook 'post-self-insert-hook #'eglot--post-self-insert-hook t))))
 #+end_src
+
+Make =#ifdef 0= blocks appear as comments.
+#+begin_src emacs-lisp
+(add-hook! 'c-mode-hook
+  (defun +c-hideifdef-init ()
+    "Enable hide-ifdef-mode with shadowing, auto-hiding, and hidden directive lines."
+    (hide-ifdef-mode 1)
+    (setq-local hide-ifdef-shadow t
+                hide-ifdef-initially t
+                hide-ifdef-lines t)
+    (hide-ifdefs)))
+#+end_src
+
+Highlight doxygen comments in =c-mode=.
+#+begin_src emacs-lisp
+(use-package! highlight-doxygen
+  :hook (c-mode . highlight-doxygen-global-mode)
+  :config
+  (custom-set-faces!
+    '(highlight-doxygen-comment
+      :inherit font-lock-comment-face)))
+#+end_src
 *** java
 Set indentation level for =java-mode= to 2.
 #+begin_src emacs-lisp

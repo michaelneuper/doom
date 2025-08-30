@@ -797,9 +797,13 @@ Set up =gptel= to use copilot and install some tools from the =llm-tool-collecti
         "R" #'gptel-context-remove-all))
 #+end_src
 *** lsp +eglot
-Change some of =eglot='s faces.
+By default =eglot-code-action-indicator= is set to a lightbulb emoji (💡) which
+annoyingly causes the line height to increase when hovering over certain things on macOS,
+let's change this to a nerd font light bulb instead.
 #+begin_src emacs-lisp
 (after! eglot
+  (setq eglot-code-action-indicator "")
+
   (custom-set-faces!
     `(eglot-inlay-hint-face
       :foreground ,(doom-color 'base5)

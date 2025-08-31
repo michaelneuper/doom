@@ -26,6 +26,7 @@ This is my literate doom emacs config.
   - [[#term][:term]]
   - [[#tools][:tools]]
   - [[#lang][:lang]]
+  - [[#app][app]]
 
 * Basic
 ** Defaults
@@ -1353,4 +1354,74 @@ Set up =org-roam= and =org-roam-ui= along with their keybindings that have the [
        "v" #'org-roam-node-visit
        :desc "Open ORUI"
        "u" #'org-roam-ui-open))
+#+end_src
+** app
+*** calendar
+=calfw= displays holidays by default, let's turn that off.
+#+begin_src emacs-lisp
+(use-package! calfw
+  :config
+  (setq cfw:display-calendar-holidays nil)
+
+  (custom-set-faces!
+    `(cfw:face-toolbar
+      :background ,(doom-color 'bg))))
+
+(use-package! calfw-blocks
+  :after calfw)
+#+end_src
+
+Integrate with the mac calendar.
+There is currently a bug in the code, until my PR is merged,
+the following patch has to be applied:
+https://github.com/haji-ali/maccalfw/pull/4/commits/fcbc3f30b919bc6a21e33d99a407e92758527db3
+#+begin_src emacs-lisp
+(use-package! maccalfw
+  :if (featurep :system 'macos)
+  :after calfw-blocks
+  :commands (maccalfw-open my/maccalfw-open-selective my/maccalfw-open-assessments)
+  :init
+  (defun my/maccalfw-open-selective ()
+    "Open calfw with selected calendars."
+    (interactive)
+    (require 'maccalfw)
+    (maccalfw--load-module)
+    (let* ((all-calendars (maccalfw-get-calendars))
+           (calendar-names (mapcar
+                            (lambda (cal)
+                              (plist-get cal :title))
+                            all-calendars))
+           (selected-names (completing-read-multiple
+                            "Select calendars: "
+                            calendar-names))
+           (selected-calendars (seq-filter
+                                (lambda (cal)
+                                  (member (plist-get cal :title)
+                                          selected-names))
+                                all-calendars)))
+      (maccalfw-open
+       selected-calendars)))
+
+  (defun my/maccalfw-open-assessments ()
+    "Open calfw with the Assessments calendar in monthly view."
+    (interactive)
+    (require 'maccalfw)
+    (maccalfw--load-module)
+    (let* ((all-calendars (maccalfw-get-calendars))
+           (assessments-calendar (seq-find
+                                  (lambda (cal)
+                                    (string=
+                                     (plist-get cal :title)
+                                     "Assessments"))
+                                  all-calendars)))
+      (cfw:open-calendar-buffer
+       :view 'month
+       :contents-sources
+       (list (maccalfw--create-source
+              (plist-get assessments-calendar :title)
+              (plist-get assessments-calendar :id)
+              (doom-color 'red)))
+       :sorter (or (and (fboundp #'calfw-blocks-default-sorter)
+                        #'calfw-blocks-default-sorter)
+                   #'string-lessp)))))
 #+end_src

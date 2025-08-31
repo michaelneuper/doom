@@ -51,3 +51,26 @@
 (package! casual)
 (package! colorful-mode)
 (package! rainbow-delimiters)
+;; OTHER
+;; CALENDAR
+(package! calfw :recipe
+  (:host github
+   :repo "kiwanami/emacs-calfw"
+   :fork (:repo "haji-ali/emacs-calfw"
+          :fork (:repo "michaelneuper/emacs-calfw"
+                 ;; FIXME fix branch not begin checked out
+                 :branch "fix"))))
+
+(package! calfw-blocks :recipe
+  (:host github
+   :repo "haji-ali/calfw-blocks"
+   :fork (:repo "michaelneuper/calfw-blocks"
+          :branch "fix-dispatch-and-colors")))
+
+(package! maccalfw :recipe
+  (:host github
+   :repo "haji-ali/maccalfw"
+   :files ("maccalfw.el"
+           "ical-form.el"
+           ("src" . "src")))
+  :ignore (not (featurep :system 'macos)))

@@ -3,14 +3,18 @@
 #+startup: content
 
 This is my literate doom emacs config.
-[[Basic]] sets up some basic emacs and doom configurations.
-[[Doom Modules]] contains the configuration all packages and tries to mirror the structure of doom's =init.el=.
+[[#basic][Basic]] sets up some basic emacs and doom configurations.
+[[#doom-modules][Doom Modules]] contains the configuration all packages and tries to mirror the structure
+of doom's =init.el=.
 
-- Each top-level heading under [[doom modules]] corresponds to a Doom module category (e.g., [[:lang]], [[ui]]), as declared in the =doom!= macro in =init.el=.
-- Each second-level heading  corresponds to an individual module within that category (e.g., [[org]], [[modeline]]).
-- Each third-level heading represents any flags applied to that module (e.g., [[+pretty]], [[+roam2]]), which alter the module’s behavior or dependencies.
+- Each top-level heading under [[#doom-modules][doom modules]] corresponds to a Doom module category
+  (e.g., [[#lang][:lang]], [[#ui][:ui]]), as declared in the =doom!= macro in =init.el=.
+- Each second-level heading  corresponds to an individual module within that category
+  (e.g., [[#org][org]], [[#modeline][modeline]]).
+- Each third-level heading represents any flags applied to that module
+  (e.g., [[#+pretty][+pretty]], [[#+roam2][+roam2]]), which alter the module’s behavior or dependencies.
 - Subsequent headings:
-  + Core packages enabled by those flags (e.g., [[org-modern]])
+  + Core packages enabled by those flags (e.g., [[#org-modern][org-modern]])
   + Manually installed packages related to that module (e.g., org-modern-indent)
   + Configuration snippets or tweaks logically grouped by package or functionality
 

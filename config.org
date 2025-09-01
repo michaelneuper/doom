@@ -808,12 +808,6 @@ let's change this to a nerd font light bulb instead.
       :family ,my/sans-serif-font)))
 #+end_src
 
-Improve =eglot= performance.
-*NOTE*: Requires building [[https://github.com/blahgeek/emacs-lsp-booster?tab=readme-ov-file#obtain-or-build-emacs-lsp-booster][emacs-lsp-booster]].
-#+begin_src emacs-lisp
-(use-package! eglot-booster
-  :after eglot
-  :config (eglot-booster-mode))
 #+end_src
 *** pdf
 Automatically enable dark mode in pdfs.

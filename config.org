@@ -26,7 +26,7 @@ This is my literate doom emacs config.
   - [[#term][:term]]
   - [[#tools][:tools]]
   - [[#lang][:lang]]
-  - [[#app][app]]
+  - [[#app][:app]]
 
 * Basic
 ** Defaults
@@ -187,16 +187,17 @@ Disable corfu's auto-popups and preselect the first candidate.
 *** deft
 Quickly search and filter through [[+roam2]] notes.
 #+begin_src emacs-lisp
-(after! deft
+(use-package! deft
+  :after org-roam
+  :config
   (setq deft-recursive t
         deft-use-filter-string-for-filename t
         deft-default-extension "org"
-        deft-directory org-roam-directory))
+        deft-directory org-roam-directory)
 
-(map! :leader
-      :prefix "r"
-      :desc "Search with deft"
-      "s" #'deft)
+  (map! :leader
+        :prefix "r"
+        :desc "Search with deft" "s" #'deft))
 #+end_src
 *** doom-dashboard
 #+ATTR_ORG: :width 350
@@ -319,8 +320,7 @@ Make the modeline look a bit nicer.
 
   (map! :leader
         :prefix "t"
-        :desc "Mode line"
-        "m" #'global-hide-mode-line-mode))
+        :desc "Mode line" "m" #'global-hide-mode-line-mode))
 #+end_src
 
 We expect the file encoding to be =LF UTF-8= so, only display it in modeline when it's something else.
@@ -362,10 +362,8 @@ Disable tabs by default and make them toggleable.
 
   (map! :leader
         :prefix "t"
-        :desc "Tabs"
-        "t" #'centaur-tabs-mode
-        :desc "Local tabs"
-        "T" #'centaur-tabs-local-mode)
+        :desc "Tabs"       "t" #'centaur-tabs-mode
+        :desc "Local tabs" "T" #'centaur-tabs-local-mode)
   :config
   (centaur-tabs-change-fonts my/sans-serif-font 140)
   :bind
@@ -387,8 +385,8 @@ Use =doom-variable-pitch-font= in the following modes:
 #+begin_src emacs-lisp
 ;; modified from https://discourse.doomemacs.org/t/cant-size-doom-variable-pitch-font/4572/2
 (use-package! mixed-pitch
-    :hook ((org-mode      . mixed-pitch-mode)
-           (org-roam-mode . mixed-pitch-mode)
+    :hook ((org-mode           . mixed-pitch-mode)
+           (org-roam-mode      . mixed-pitch-mode)
            (doom-docs-org-mode . mixed-pitch-mode))
     :config
     (setq mixed-pitch-set-height t
@@ -464,8 +462,7 @@ Make rainbow delimiters toggleable.
 ;; https://github.com/orgs/doomemacs/projects/5/views/1?pane=issue&itemId=117610828
 (map! :leader
       :prefix "t"
-      :desc "Rainbow delimiters"
-      "(" #'rainbow-delimiters-mode)
+      :desc "Rainbow delimiters" "(" #'rainbow-delimiters-mode)
 #+end_src
 ** :editor
 *** evil
@@ -501,8 +498,7 @@ Add a toggle for =lispy-mode=.
 
 (map! :leader
       :prefix "t"
-      :desc "Lispy"
-      "L" #'my/toggle-lispy)
+      :desc "Lispy" "L" #'my/toggle-lispy)
 #+end_src
 ** :emacs
 *** dired
@@ -553,9 +549,8 @@ Define a custom function to quickly find files in favourite directories.
 
 (map! :leader
       :prefix "f"
-      :desc "Quick Access"
-      "q" #'my/open-favorite-dir
-      "d" #'consult-dir)
+      :desc "Quick Access" "q" #'my/open-favorite-dir
+                           "d" #'consult-dir)
 #+end_src
 
 Set =quick-access-entries= for =dirvish=.
@@ -579,16 +574,15 @@ Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#in
 
 (map! :leader
       :prefix "o"
-      :desc "Dirvish Quick Access"
-      "q" #'dirvish-quick-access)
+      :desc "Dirvish Quick Access" "q" #'dirvish-quick-access)
 #+end_src
 ** :term
 *** eshell
 Customise eshell:
 - Set custom aliases
-- Add an =fzf=-like =C-r= keybinding
 - Set custom prompt
 - Add icons to =eshell/ls= and make links clickable
+- Add an =fzf=-like =C-r= keybinding
 #+begin_src emacs-lisp
 (after! eshell
   ;; ALIASES
@@ -614,9 +608,6 @@ Customise eshell:
    "bi" "brew install $*"
    "bic" "brew install --cask $*"
    "bu" "brew update && brew upgrade")
-
-  (map! :map eshell-mode-map
-        :ni "C-r" #'+eshell/search-history)
 
   ;; PROMPT
   (custom-set-faces!
@@ -740,7 +731,10 @@ Formats as: propertized \" at <icon> on  <branch-name>\""
       map)
     "Keys in effect when point is over a file from `eshell/ls'.")
 
-  (advice-add #'eshell-ls-annotate :filter-return #'lem-eshell-prettify))
+  (advice-add #'eshell-ls-annotate :filter-return #'lem-eshell-prettify)
+
+  (map! :map eshell-mode-map
+        :ni "C-r" #'+eshell/search-history))
 #+end_src
 ** :tools
 *** debugger
@@ -797,8 +791,7 @@ Set up =gptel= to use copilot and install some tools from the =llm-tool-collecti
   (map! :map gptel-mode-map
         :leader
         :prefix "ol"
-        :desc "Remove all context"
-        "R" #'gptel-context-remove-all))
+        :desc "Remove all context" "R" #'gptel-context-remove-all))
 #+end_src
 *** lsp +eglot
 By default =eglot-code-action-indicator= is set to a lightbulb emoji (💡) which
@@ -848,20 +841,14 @@ Create some keybindings for commonly used commands.
 (map! :map pdf-view-mode-map
       :localleader
       (:prefix ("h" . "history")
-       :desc "Go forward in history"
-       "f" #'pdf-history-forward
-       :desc "Go backward in history"
-       "b" #'pdf-history-backward)
+       :desc "Go forward in history"  "f" #'pdf-history-forward
+       :desc "Go backward in history" "b" #'pdf-history-backward)
 
       (:prefix ("a" . "annotations")
-       :desc "Text"
-       "t" #'pdf-annot-add-text-annotation
-       :desc "Markup"
-       "h" #'pdf-annot-add-markup-annotation
-       :desc "Highlight"
-       "h" #'pdf-annot-add-highlight-markup-annotation
-       :desc "Strikeout"
-       "s" #'pdf-annot-add-strikeout-markup-annotation))
+       :desc "Text"      "t" #'pdf-annot-add-text-annotation
+       :desc "Markup"    "m" #'pdf-annot-add-markup-annotation
+       :desc "Highlight" "h" #'pdf-annot-add-highlight-markup-annotation
+       :desc "Strikeout" "s" #'pdf-annot-add-strikeout-markup-annotation))
 #+end_src
 ** :lang
 *** cc
@@ -937,9 +924,6 @@ This used to the default behaviour in doom but was changed in commit [[https://g
 My CDLaTeX templates.
 #+begin_src emacs-lisp
 (after! cdlatex
-  (map! :map cdlatex-mode-map
-        :i "TAB" #'cdlatex-tab)
-
   (setq cdlatex-math-symbol-alist ;; expand when prefixed with `
         ;; TODO change prefix key to something like ;
         '((?' ("`"))
@@ -968,7 +952,10 @@ My CDLaTeX templates.
           ("lim" "Insert \\lim_\\limits{{} \\to {}}" "\\lim_\\limits{{?} \\to {}}" cdlatex-position-cursor nil nil t)
           ("sr" "Insert {}^2" "{?}^2" cdlatex-position-cursor nil nil t)
           ("cb" "Insert {}^3" "{?}^3" cdlatex-position-cursor nil nil t)
-          ("op" "Insert \\operatorname{}()" "\\operatorname{?}()" cdlatex-position-cursor nil nil t))))
+          ("op" "Insert \\operatorname{}()" "\\operatorname{?}()" cdlatex-position-cursor nil nil t)))
+
+  (map! :map cdlatex-mode-map
+        :i "TAB" #'cdlatex-tab))
 #+end_src
 *** org
 **** org-mode
@@ -1095,15 +1082,17 @@ Requires [[latex]] and [[evil]] to be enabled.
 Set up =LaTeX= previews in =org= buffers.
 #+begin_src emacs-lisp
 ;; TODO enable latex previews in org-roam and latex buffers (use xenops)
-(after! org
-  (dolist (pkg '("amsmath" "amssymb" "mathtools" "mathrsfs"))
-    (add-to-list 'org-latex-packages-alist `("" ,pkg t))))
 
 ;; modified from https://abode.karthinks.com/org-latex-preview/
 (use-package! org-latex-preview
   :after org
   :hook (org-mode . org-latex-preview-auto-mode)
-  :init (setq org-startup-with-latex-preview t)
+  :init
+  (setq org-startup-with-latex-preview t)
+
+  (after! org
+    (dolist (pkg '("amsmath" "amssymb" "mathtools" "mathrsfs"))
+      (add-to-list 'org-latex-packages-alist `("" ,pkg t))))
   :config
   (plist-put org-latex-preview-appearance-options
              ;; :page-width 0.8)
@@ -1239,8 +1228,7 @@ Align tables with images and hidden markup correctly with [[https://github.com/c
 #+begin_src emacs-lisp
 (use-package! valign
   :hook (org-mode . valign-mode)
-  :config
-  (setq valign-fancy-bar t))
+  :config (setq valign-fancy-bar t))
 #+end_src
 **** +dragndrop
 Customise drag-and-drop support for images and files, insert them into the =images/= directory.
@@ -1249,28 +1237,94 @@ Customise drag-and-drop support for images and files, insert them into the =imag
   :defer t
   :init
   (setq-default org-download-image-dir "images")
+  (map! :map org-mode-map
+        :localleader
+        :prefix "a"
+        :desc "Rename image at point" "C" #'org-download-rename-at-point)
   :config
   (setq org-download-method 'directory
-        org-download-link-format"[[file:images/%s]]\n"
+        org-download-link-format "[[file:images/%s]]\n"
         org-download-heading-lvl nil))
 
-(map! :map org-mode-map
-      :localleader
-      :prefix "a"
-      :desc "Rename image at point"
-      "C" #'org-download-rename-at-point)
 #+end_src
 **** +roam2
-Set up =org-roam= and =org-roam-ui= along with their keybindings that have the [[kbd:][<leader> r]] prefix.
+Set up =org-roam= along with keybindings that have the [[kbd:][<leader> r]] prefix.
 #+begin_src emacs-lisp
 (use-package! org-roam
   :defer t
   :config
+  ;; variables
   (setq org-roam-directory (file-truename "~/Notes")
         org-roam-db-location (file-truename "~/Notes/org-roam.db")
         org-attach-id-dir "assets/")
-  (org-roam-db-autosync-enable))
 
+  (org-roam-db-autosync-enable)
+
+  ;; custom `org-roam' functions
+  (defun my/org-roam--after-point ()
+    "If in Evil normal state and not at EOL, move one char forward."
+    (when (and (bound-and-true-p evil-mode)
+               (evil-normal-state-p)
+               (not (eolp)))
+      (forward-char)))
+
+  (defun my/current-buffer-has-module-tag ()
+    "Return non-nil when this buffer’s #+filetags line contains :module:."
+    (save-excursion
+      (goto-char (point-min))
+      (re-search-forward "^#\\+filetags:.*:module:" nil t)))
+
+  (defun my/org-roam-insert-lowercase ()
+    "Insert an org-roam link after point.
+   Lower-case the link text unless the current buffer is tagged :module:."
+    (interactive)
+    (let* ((module-context-p (my/current-buffer-has-module-tag))
+           (org-roam-node-formatter
+            (lambda (node)
+              (let ((title (org-roam-node-title node)))
+                (if module-context-p title (downcase title))))))
+      (my/org-roam--after-point)
+      (call-interactively #'org-roam-node-insert)))
+
+  (defun my/org-roam-insert-custom-title ()
+    "Pick a node, then prompt for a verbatim link description."
+    (interactive)
+    (my/org-roam--after-point)
+    (let* ((node (org-roam-node-read))
+           (desc (read-string "Description: "))
+           (link (org-link-make-string
+                  (concat "id:" (org-roam-node-id node))
+                  desc)))
+      (insert link)
+      (org-roam-link-replace-at-point link)
+      (run-hooks 'org-roam-insert-node-hook)
+      (forward-char)))
+
+  ;; copied from https://hieuphay.com/doom-emacs-config/#customizing-main-interface
+  (defun my/org-roam-node-find-by-mtime ()
+    "Find a node by last modified date."
+    (interactive)
+    (find-file
+     (org-roam-node-file
+      (org-roam-node-read nil nil #'org-roam-node-read-sort-by-file-mtime))))
+
+  ;; keybindings
+  (map! :map org-roam-mode-map
+        :leader
+        (:prefix ("r" . "roam")
+         :desc "Add alias"          "a" #'org-roam-alias-add
+         :desc "Remove alias"       "A" #'org-roam-alias-remove
+         :desc "Toggle roam buffer" "b" #'org-roam-buffer-toggle
+         :desc "Find node"          "f" #'my/org-roam-node-find-by-mtime
+         :desc "Insert node"        "i" #'my/org-roam-insert-lowercase
+         :desc "Insert title"       "I" #'my/org-roam-insert-custom-title
+         :desc "Add tag"            "t" #'org-roam-tag-add
+         :desc "Remove tag"         "T" #'org-roam-tag-remove
+         :desc "Visit node"         "v" #'org-roam-node-visit)))
+#+end_src
+
+=org-roam-ui= provides a pretty graph.
+#+begin_src emacs-lisp
 (use-package! websocket
   :after org-roam)
 
@@ -1284,81 +1338,14 @@ Set up =org-roam= and =org-roam-ui= along with their keybindings that have the [
         org-roam-mode-sections
         (list #'org-roam-backlinks-section
               #'org-roam-reflinks-section
-              #'org-roam-unlinked-references-section)))
+              #'org-roam-unlinked-references-section))
 
-;; custom org-roam functions
-(defun my/org-roam--after-point ()
-  "If in Evil normal state and not at EOL, move one char forward."
-  (when (and (bound-and-true-p evil-mode)
-             (evil-normal-state-p)
-             (not (eolp)))
-    (forward-char)))
-
-(defun my/current-buffer-has-module-tag ()
-  "Return non-nil when this buffer’s #+filetags line contains :module:."
-  (save-excursion
-    (goto-char (point-min))
-    (re-search-forward "^#\\+filetags:.*:module:" nil t)))
-
-(defun my/org-roam-insert-lowercase ()
-  "Insert an org-roam link after point.
-   Lower-case the link text unless the current buffer is tagged :module:."
-  (interactive)
-  (let* ((module-context-p (my/current-buffer-has-module-tag))
-         (org-roam-node-formatter
-          (lambda (node)
-            (let ((title (org-roam-node-title node)))
-              (if module-context-p title (downcase title))))))
-    (my/org-roam--after-point)
-    (call-interactively #'org-roam-node-insert)))
-
-(defun my/org-roam-insert-custom-title ()
-  "Pick a node, then prompt for a verbatim link description."
-  (interactive)
-  (my/org-roam--after-point)
-  (let* ((node (org-roam-node-read))
-         (desc (read-string "Description: "))
-         (link (org-link-make-string
-                (concat "id:" (org-roam-node-id node))
-                desc)))
-    (insert link)
-    (org-roam-link-replace-at-point link)
-    (run-hooks 'org-roam-insert-node-hook)
-    (forward-char)))
-
-;; copied from https://hieuphay.com/doom-emacs-config/#customizing-main-interface
-(defun my/org-roam-node-find-by-mtime ()
-  "Find a node by last modified date."
-  (interactive)
-  (find-file
-   (org-roam-node-file
-    (org-roam-node-read nil nil #'org-roam-node-read-sort-by-file-mtime))))
-
-(map! :map evil-org-mode-map
-      :leader
-      (:prefix ("r" . "roam")
-       :desc "Add alias"
-       "a" #'org-roam-alias-add
-       :desc "Remove alias"
-       "A" #'org-roam-alias-remove
-       :desc "Toggle roam buffer"
-       "b" #'org-roam-buffer-toggle
-       :desc "Find node"
-       "f" #'my/org-roam-node-find-by-mtime
-       :desc "Insert node"
-       "i" #'my/org-roam-insert-lowercase
-       :desc "Insert node (prompt title)"
-       "I" #'my/org-roam-insert-custom-title
-       :desc "Add tag"
-       "t" #'org-roam-tag-add
-       :desc "Remove tag"
-       "T" #'org-roam-tag-remove
-       :desc "Visit node"
-       "v" #'org-roam-node-visit
-       :desc "Open ORUI"
-       "u" #'org-roam-ui-open))
+  (map! :map org-roam-mode-map
+        :leader
+        (:prefix ("r" . "roam")
+         :desc "Open ORUI" "u" #'org-roam-ui-open)))
 #+end_src
-** app
+** :app
 *** calendar
 =calfw= displays holidays by default, let's turn that off.
 #+begin_src emacs-lisp

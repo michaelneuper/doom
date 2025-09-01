@@ -92,7 +92,9 @@ Some macOS specific settings.
           mac-option-modifier 'none
           mac-right-option-modifier 'super
           ns-use-proxy-icon nil ; disable file icon in titlebar
-          ns-use-native-fullscreen t))
+          ns-use-native-fullscreen t)
+
+  (map! :nvi "M-v" #'yank))
 #+end_src
 ** Visual Enchancements
 *** Theme & Fonts
@@ -101,7 +103,9 @@ The fonts need to be installed on your machine and make sure to run ~M-x nerd-ic
 #+ATTR_ORG: :width 500
 [[file:images/gruvbox-colorscheme.png]]
 #+begin_src emacs-lisp
-(setq doom-theme 'doom-gruvbox)
+(setq doom-theme 'doom-gruvbox
+      doom-gruvbox-dark-variant "medium"
+      doom-gruvbox-padded-modeline t)
 
 (if (featurep :system 'macos)
     (progn
@@ -165,7 +169,8 @@ Format the title.
 ;;            (unless (string= "-" project-name)
 ;;              (format (if (buffer-modified-p)  " ◉ %s" " ● %s") project-name))))))
 
-(setq frame-title-format '("" (:eval buffer-name) "%b"))
+;; (setq frame-title-format '("" (:eval buffer-name) "%b"))
+(setq frame-title-format "GNU Emacs")
 #+end_src
 * Doom Modules
 ** :completion
@@ -378,14 +383,12 @@ Disable tabs by default and make them toggleable.
 Use =doom-variable-pitch-font= in the following modes:
 - =org-mode=
 - =org-roam-mode= (only relevant if you have [[+roam2]])
-- =LaTeX-mode= (only relevant if you have [[latex]])
 - =doom-docs-org-mode=
 #+begin_src emacs-lisp
 ;; modified from https://discourse.doomemacs.org/t/cant-size-doom-variable-pitch-font/4572/2
 (use-package! mixed-pitch
     :hook ((org-mode      . mixed-pitch-mode)
            (org-roam-mode . mixed-pitch-mode)
-           (LaTeX-mode    . mixed-pitch-mode)
            (doom-docs-org-mode . mixed-pitch-mode))
     :config
     (setq mixed-pitch-set-height t
@@ -669,7 +672,7 @@ Formats as: propertized \" at <icon> on  <branch-name>\""
     (concat (if (bobp) "" "\n")
             (let ((pwd (eshell/pwd)))
               (propertize (if (equal pwd "~")
-                              pwd (abbreviate-file-name pwd))
+                              pwd (abbreviate-file-name (shrink-path-file pwd)))
                           'face '+eshell-prompt-pwd))
             (my/+eshell--current-git-branch)
             (propertize "\nλ" 'face (if (zerop eshell-last-command-status) 'success 'error))

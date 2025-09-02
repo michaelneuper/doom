@@ -888,17 +888,6 @@ Make =#ifdef 0= blocks appear as comments.
     (hide-ifdefs)))
 #+end_src
 
-Highlight doxygen comments in =c-mode=.
-#+begin_src emacs-lisp
-(use-package! highlight-doxygen
-  :hook ((c-mode    . highlight-doxygen-global-mode)
-         (c-ts-mode . highlight-doxygen-global-mode))
-  :config
-  (custom-set-faces!
-    '(highlight-doxygen-comment
-      :inherit font-lock-comment-face)))
-#+end_src
-
 Fix issue where two new lines are inserted after ={=.
 #+begin_src emacs-lisp
 (after! eglot

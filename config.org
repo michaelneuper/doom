@@ -230,7 +230,9 @@ Also disable [[modeline]] and cursor.
   "A list of messages, one of which dashboard chooses to display.")
 
 (add-hook! '+doom-dashboard-functions :append
-  (let* ((icon (propertize  #(" " 0 1 (display (height 1.5))) 'face `(:foreground ,(doom-color 'grey))))
+  (let* ((icon (propertize
+                #(" " 0 1 (display (height 1.5)))
+                'face `(:foreground ,(doom-color 'magenta))))
          (msg  (nth (random (length my/dashboard-footer-messages))
                     my/dashboard-footer-messages))
          (line (concat icon msg)))
@@ -516,7 +518,7 @@ Define a custom function to quickly find files in favourite directories.
     ("g" "~/GitHub/" "GitHub")
     ("t" "~/.Trash/" "Trash")
     ("o" "~/OneDrive - Stellenbosch University/" "OneDrive")
-    ("n" "/scpx:narga:" "NARGA"))
+    ("n" "/scpx:narga-general:" "NARGA"))
   "List of favorite directories in the form (KEY PATH LABEL).")
 
 (defun my/open-favorite-dir ()
@@ -868,24 +870,15 @@ Configure =cc-mode=.
 
 (add-hook! 'c-mode-common-hook (c-setup-doc-comment-style))
 
-(add-hook! 'c-mode-hook
+(add-hook! '(c-mode-hook c-ts-mode-hook)
   (unless (or (file-exists-p "makefile")
               (file-exists-p "Makefile"))
     (setq-local compile-command "cc -Wall -o main main.c")))
 #+end_src
 
- Fix issue where two new lines are inserted after ={=.
-#+begin_src emacs-lisp
-(after! eglot
-  (add-hook! 'eglot-managed-mode-hook :append
-    (defun +eglot--rm-eglot--post-self-insert-hook ()
-      ;; remove eglot’s post-self-insert-hook in current buffer
-      (remove-hook 'post-self-insert-hook #'eglot--post-self-insert-hook t))))
-#+end_src
-
 Make =#ifdef 0= blocks appear as comments.
 #+begin_src emacs-lisp
-(add-hook! 'c-mode-hook
+(add-hook! '(c-mode-hook c-ts-mode-hook)
   (defun +c-hideifdef-init ()
     "Enable hide-ifdef-mode with shadowing, auto-hiding, and hidden directive lines."
     (hide-ifdef-mode 1)
@@ -898,11 +891,21 @@ Make =#ifdef 0= blocks appear as comments.
 Highlight doxygen comments in =c-mode=.
 #+begin_src emacs-lisp
 (use-package! highlight-doxygen
-  :hook (c-mode . highlight-doxygen-global-mode)
+  :hook ((c-mode    . highlight-doxygen-global-mode)
+         (c-ts-mode . highlight-doxygen-global-mode))
   :config
   (custom-set-faces!
     '(highlight-doxygen-comment
       :inherit font-lock-comment-face)))
+#+end_src
+
+Fix issue where two new lines are inserted after ={=.
+#+begin_src emacs-lisp
+(after! eglot
+  (add-hook! 'eglot-managed-mode-hook :append
+    (defun +eglot--rm-eglot--post-self-insert-hook ()
+      ;; remove eglot’s post-self-insert-hook in current buffer
+      (remove-hook 'post-self-insert-hook #'eglot--post-self-insert-hook t))))
 #+end_src
 *** java
 Set indentation level for =java-mode= to 2.
@@ -1331,8 +1334,7 @@ Set up =org-roam= along with keybindings that have the [[kbd:][<leader> r]] pref
 
 =org-roam-ui= provides a pretty graph.
 #+begin_src emacs-lisp
-(use-package! websocket
-  :after org-roam)
+(use-package! websocket :after org-roam)
 
 (use-package! org-roam-ui
   :after org-roam
@@ -1356,24 +1358,30 @@ Set up =org-roam= along with keybindings that have the [[kbd:][<leader> r]] pref
 =calfw= displays holidays by default, let's turn that off.
 #+begin_src emacs-lisp
 (use-package! calfw
+  :init
+  (map! :leader
+        :prefix "o"
+        (:prefix ("c" . "calendar")
+         :desc "Default calendar" "d" #'cfw:open-calendar-buffer))
   :config
   (setq cfw:display-calendar-holidays nil)
 
   (custom-set-faces!
-    `(cfw:face-toolbar
-      :background ,(doom-color 'bg))))
+    `(cfw:face-toolbar :background ,(doom-color 'bg))))
 
-(use-package! calfw-blocks
-  :after calfw)
+(use-package! calfw-blocks :after calfw)
 #+end_src
 
-Integrate with the mac calendar.
+Integrate with the mac calendar, requires using my forks of =calfw=, see =packages.el=.
 #+begin_src emacs-lisp
 (use-package! maccalfw
   :if (featurep :system 'macos)
   :after calfw-blocks
-  :commands (maccalfw-open my/maccalfw-open-selective my/maccalfw-open-assessments)
+  :commands (maccalfw-open
+             my/maccalfw-open-selective
+             my/maccalfw-open-assessments)
   :init
+  ;; custom functions
   (defun my/maccalfw-open-selective ()
     "Open calfw with selected calendars."
     (interactive)
@@ -1416,5 +1424,11 @@ Integrate with the mac calendar.
               (doom-color 'red)))
        :sorter (or (and (fboundp #'calfw-blocks-default-sorter)
                         #'calfw-blocks-default-sorter)
-                   #'string-lessp)))))
+                   #'string-lessp))))
+  ;; keybindings
+  (map! :leader
+        :prefix "oc"
+        :desc "Assessment calendar" "a" #'my/maccalfw-open-assessments
+        :desc "Select calendar"     "s" #'my/maccalfw-open-selective
+        :desc "Mac calendar"        "m" #'maccalfw-open))
 #+end_src

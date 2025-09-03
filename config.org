@@ -755,6 +755,19 @@ Formats as: propertized \" at <icon> on  <branch-name>\""
   (map! :map eshell-mode-map
         :ni "C-r" #'+eshell/search-history))
 #+end_src
+*** vterm
+Some settings in my =.zshrc= cause issues in vterm,
+so I use this environment variable to disable them when running inside vterm.
+#+begin_src emacs-lisp
+(after! vterm
+  (setq vterm-environment '("VTERM=1"))
+
+  (map! :map vterm-mode-map
+        :ni "C-j" #'vterm-send-down
+        :ni "C-k" #'vterm-send-up
+        :i  "C-b" #'backward-char
+        :i  "C-f" #'forward-char))
+#+end_src
 ** :tools
 *** debugger
 #+begin_src emacs-lisp

@@ -126,6 +126,18 @@ The fonts need to be installed on your machine and make sure to run ~M-x nerd-ic
       doom-emoji-font (font-spec :family "Apple Color Emoji"))
 #+end_src
 
+Add some missing file icons to =nerd-fonts=.
+#+begin_src emacs-lisp
+(after! nerd-icons
+  (dolist (entry
+           '(("s"     nerd-icons-sucicon "nf-seti-asm"        :face nerd-icons-blue)
+             ("o"     nerd-icons-codicon "nf-cod-file_binary" :face nerd-icons-orange)
+             ("class" nerd-icons-codicon "nf-cod-file_binary" :face nerd-icons-orange)
+             ("vim"   nerd-icons-devicon "nf-dev-vim"         :face default)
+             ("typ"   nerd-icons-flicon  "nf-linux-typst"     :face nerd-icons-dblue)))
+    (add-to-list 'nerd-icons-extension-icon-alist entry)))
+#+end_src
+
 Make escape characters like =\n= orange when the =gruvbox= theme is used like in neovim.
 #+begin_src emacs-lisp
 (custom-theme-set-faces! 'doom-gruvbox

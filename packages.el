@@ -68,3 +68,4 @@
            "ical-form.el"
            ("src" . "src")))
   :ignore (not (featurep :system 'macos)))
+(package! blamer)

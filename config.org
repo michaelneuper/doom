@@ -595,6 +595,36 @@ Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#in
       :prefix "o"
       :desc "Dirvish Quick Access" "q" #'dirvish-quick-access)
 #+end_src
+*** vc
+#+begin_src emacs-lisp
+(use-package! blamer
+  :init
+  (map! :leader
+        :desc "Git blame"   "tB" #'blamer-mode
+        :desc "Commit info" "gi" (lambda () (interactive)
+                                   (funcall (if (display-graphic-p)
+                                                #'blamer-show-posframe-commit-info
+                                              #'blamer-show-commit-info))))
+  :config
+  (defun blamer-callback-show-commit-diff (commit-info)
+    (interactive)
+    (let ((commit-hash (plist-get commit-info :commit-hash)))
+      (when commit-hash
+        (magit-show-commit commit-hash))))
+
+  (setq blamer-author-formatter " ✎ %s "
+        blamer-datetime-formatter "[%s]"
+        blamer-commit-formatter " ● %s"
+        blamer-avatar-folder (concat doom-cache-dir "blamer/avatars/")
+        blamer-bindings '(("<mouse-1>" . blamer-callback-show-commit-diff))
+        blamer-min-offset 10)
+
+  (custom-set-faces!
+    `(blamer-face
+      :height 0.8
+      :foreground ,(face-attribute 'font-lock-comment-face :foreground)
+      :slant italic)))
+#+end_src
 ** :term
 *** eshell
 Customise eshell:

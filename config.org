@@ -142,6 +142,14 @@ Make escape characters like =\n= orange when the =gruvbox= theme is used like in
 #+begin_src emacs-lisp
 (custom-theme-set-faces! 'doom-gruvbox
   `(font-lock-escape-face :foreground ,(doom-color 'orange)))
+
+(custom-set-faces!
+  `(font-lock-doc-face
+    :foreground ,(face-attribute 'font-lock-comment-face :foreground))
+  `(hexl-address-region :font ,my/mono-font)
+  `(hexl-ascii-region
+    :background ,(doom-color 'bg-alt)
+    :foreground ,(doom-color 'fg-alt)))
 #+end_src
 *** Lines
 Enable relative line numbers and make their slant normal (not italic).
@@ -499,6 +507,13 @@ Set some =evil= variables and define some keybindings.
         :prefix "g"
         :nv "y" #'evilnc-copy-and-comment-operator
         :nv "Y" #'+evil:yank-unindented))
+#+end_src
+*** format
+#+begin_src emacs-lisp
+(map! :map apheleia-mode-map
+      :leader
+      "fs" #'+format/save-buffer
+      "bs" #'+format/save-buffer-no-reformat)
 #+end_src
 *** lispy
 Add a toggle for =lispy-mode=.
@@ -870,10 +885,20 @@ let's change this to a nerd font light bulb instead.
       :height 0.9
       :family ,my/sans-serif-font))
 
+    ;; :foreground ,(face-attribute 'font-lock-comment-face :background)))
   (map! :map eglot-mode-map
         :leader
         :prefix "t"
         :desc "Toggle inlay hints" "h" #'eglot-inlay-hints-mode))
+#+end_src
+*** magit
+Add icons to =magit= and make the commit summary bold.
+#+begin_src emacs-lisp
+(after! magit
+  (setopt magit-format-file-function #'magit-format-file-nerd-icons)
+
+  (custom-set-faces!
+    '(git-commit-summary :weight bold)))
 #+end_src
 *** pdf
 Automatically enable dark mode in pdfs.
@@ -913,7 +938,8 @@ Create some keybindings for commonly used commands.
 *** tree-sitter
 #+begin_src emacs-lisp
 (after! treesit
-  (setq treesit-auto-install-grammar 'always))
+  (setq treesit-font-lock-level 4
+        treesit-auto-install-grammar 'always))
 #+end_src
 ** :lang
 *** cc
@@ -921,10 +947,14 @@ Configure =cc-mode=.
 #+begin_src emacs-lisp
 (after! cc-mode
   (setf (alist-get 'c-mode c-default-style) "k&r")
-  (setq c-basic-offset 2
-        c-doc-comment-style '((c-mode . doxygen))))
+  (setq c-basic-offset 4
+        c-doc-comment-style '((c-mode    . doxygen)
+                              (c-ts-mode . doxygen))
+        whitespace-style '(face trailing lines-tail empty))
+        indent-tabs-mode t)
 
-(add-hook! 'c-mode-common-hook (c-setup-doc-comment-style))
+(add-hook! '(c-mode-common-hook c-ts-mode-hook)
+  (c-setup-doc-comment-style))
 
 (add-hook! '(c-mode-hook c-ts-mode-hook)
   (unless (or (file-exists-p "makefile")
@@ -1060,7 +1090,13 @@ By default, all =org= links are the same colour, lets change that.
        :mouse-face `(:foreground ,(doom-color 'bg)
                      :background ,(doom-color color))))))
 
-(after! org (my/org-apply-link-colors))
+(after! org
+  (my/org-apply-link-colors)
+
+  (custom-set-faces!
+    `((org-link)
+      :weight normal
+      :underline nil)))
 #+end_src
 
 I incorrectly tagged a bunch of org files, so this function fixes that.

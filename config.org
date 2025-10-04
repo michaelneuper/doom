@@ -40,6 +40,11 @@ Make this file run slightly faster (see [[https://nullprogram.com/blog/2016/12/2
 ;;; config.el -*- lexical-binding: t; -*-
 #+end_src
 
+#+begin_src emacs-lisp :tangle packages.el
+;; -*- no-byte-compile: t; -*-
+;;; $DOOMDIR/packages.el
+#+end_src
+
 Make emacs faster.
 #+begin_src emacs-lisp
 (use-package! gcmh
@@ -166,7 +171,7 @@ Enable relative line numbers and make their slant normal (not italic).
       :foreground ,(doom-color 'fg))))
 #+end_src
 
-Only highlight  the current line in programming modes and =dired=.
+Only highlight the current line in programming modes and =dired=.
 #+begin_src emacs-lisp
 (setq global-hl-line-modes '(prog-mode dired-mode))
 #+end_src
@@ -469,6 +474,10 @@ Reduce text indent in =org= buffers caused by =mixed-pitch-mode=.
 *** other
 **** spacious-padding
 Add padding to emacs frames and windows with [[https://github.com/protesilaos/spacious-padding][spacious-padding]].
+#+begin_src emacs-lisp :tangle packages.el
+(package! spacious-padding)
+#+end_src
+
 #+begin_src emacs-lisp
 ;; https://protesilaos.com/emacs/spacious-padding
 (use-package! spacious-padding
@@ -484,6 +493,10 @@ Add padding to emacs frames and windows with [[https://github.com/protesilaos/sp
   (spacious-padding-mode 1))
 #+end_src
 **** rainbow-delimiters
+#+begin_src emacs-lisp :tangle packages.el
+(package! rainbow-delimiters)
+#+end_src
+
 Make rainbow delimiters toggleable.
 #+begin_src emacs-lisp
 (add-hook! '(emacs-lisp-mode-hook
@@ -495,6 +508,13 @@ Make rainbow delimiters toggleable.
 (map! :leader
       :prefix "t"
       :desc "Rainbow delimiters" "(" #'rainbow-delimiters-mode)
+#+end_src
+**** solaire-mode
+This is a package built in to doom to distinguish between code buffers and popup buffers
+by giving popups a darker background.
+I'm not a fan, so I disable it.
+#+begin_src emacs-lisp :tangle packages.el
+(package! solaire-mode :disable t)
 #+end_src
 ** :editor
 *** evil
@@ -551,6 +571,13 @@ Add a toggle for =lispy-mode=.
       :desc "Lispy" "L" #'my/toggle-lispy)
 #+end_src
 *** whitespace
+#+begin_src emacs-lisp :tangle packages.el
+(package! whitespace4r :recipe
+  (:host github
+   :repo "twlz0ne/whitespace4r.el"
+   :files ("whitespace4r.el")))
+#+end_src
+
 #+begin_src emacs-lisp
 (use-package! whitespace4r
   :hook (prog-mode . whitespace4r-mode)
@@ -855,7 +882,7 @@ so I use this environment variable to disable them when running inside vterm.
 (setq eros-eval-result-prefix "⇒ ") ;; or use ⟹
 #+end_src
 *** llm
-Set up =gptel= to use copilot and install some tools from the =llm-tool-collection= package.
+Set up =gptel= to use copilot.
 #+begin_src emacs-lisp
 (after! gptel
   (setq gptel-model 'gpt-4.1
@@ -868,6 +895,20 @@ Set up =gptel= to use copilot and install some tools from the =llm-tool-collecti
     `(gptel-context-deletion-face
       :inherit diff-removed))
 
+  (map! :map gptel-mode-map
+        :leader
+        :prefix "ol"
+        :desc "Remove all context" "R" #'gptel-context-remove-all))
+#+end_src
+
+Install some tools from the =llm-tool-collection= package.
+#+begin_src emacs-lisp :tangle packages.el
+(package! llm-tool-collection
+  :recipe (:host github :repo "skissue/llm-tool-collection"))
+#+end_src
+
+#+begin_src emacs-lisp
+(after! gptel
   ;; see https://github.com/karthink/gptel/wiki/Tools-collection
   (gptel-make-tool
    :function (lambda (command &optional working_dir)
@@ -890,12 +931,7 @@ Set up =gptel= to use copilot and install some tools from the =llm-tool-collecti
    :include t)
 
   (mapcar (apply-partially #'apply #'gptel-make-tool)
-          (llm-tool-collection-get-all))
-
-  (map! :map gptel-mode-map
-        :leader
-        :prefix "ol"
-        :desc "Remove all context" "R" #'gptel-context-remove-all))
+          (llm-tool-collection-get-all)))
 #+end_src
 *** lsp +eglot
 By default =eglot-code-action-indicator= is set to a lightbulb emoji (💡) which
@@ -1069,6 +1105,37 @@ My CDLaTeX templates.
         :i "TAB" #'cdlatex-tab))
 #+end_src
 *** org
+Use tecosaur's fork of =org-mode=, this is necessary for [[#org-latex][org-latex]].
+#+begin_src emacs-lisp :tangle packages.el
+(package! org :recipe
+  (:host nil
+   :repo "https://git.tecosaur.net/mirrors/org-mode.git"
+   :remote "mirror"
+   :fork (:host nil
+          :repo "https://git.tecosaur.net/tec/org-mode.git"
+          :branch "dev"
+          :remote "tecosaur")
+   :files (:defaults "etc")
+   :build t
+   :pre-build
+   (with-temp-file "org-version.el"
+     (require 'lisp-mnt)
+     (let ((version (with-temp-buffer
+                      (insert-file-contents "lisp/org.el")
+                      (lm-header "version")))
+           (git-version
+            (string-trim
+             (with-temp-buffer
+               (call-process "git" nil t nil "rev-parse" "--short" "HEAD")
+               (buffer-string)))))
+       (insert
+        (format "(defun org-release () \"The release version of Org.\" %S)\n" version)
+        (format "(defun org-git-version () \"The truncate git commit hash of Org mode.\" %S)\n" git-version)
+        "(provide 'org-version)\n"))))
+  :pin nil)
+
+(unpin! org)
+#+end_src
 **** org-mode
 Set some =org= variables.
 #+begin_src emacs-lisp
@@ -1176,24 +1243,27 @@ Set up =LaTeX= previews in =org= buffers.
 ;; modified from https://abode.karthinks.com/org-latex-preview/
 (use-package! org-latex-preview
   :after org
+  :hook (org-mode . org-latex-preview-mode)
   :init
   (setq org-startup-with-latex-preview t)
 
   (after! org
     (dolist (pkg '("amsmath" "amssymb" "mathtools" "mathrsfs"))
       (add-to-list 'org-latex-packages-alist `("" ,pkg t))))
+
   :config
   (plist-put org-latex-preview-appearance-options
              ;; :page-width 0.8)
              :page-width 1.0)
 
-  (setq org-latex-preview-auto-ignored-commands
+  (setq org-latex-preview-mode-ignored-commands
         '(next-line previous-line mwheel-scroll ultra-scroll
           scroll-up-command scroll-down-command
           evil-scroll-up evil-scroll-down evil-scroll-line-up evil-scroll-line-down)
         org-latex-preview-numbered t
-        org-latex-preview-live t
-        org-latex-preview-live-debounce 0.25)
+        org-latex-preview-mode-display-live t
+        org-latex-preview-mode-update-delay 0.25)
+        ;; org-latex-preview-cache 'temp) ;; HACK fix `org-persist' issue: https://discord.com/channels/406534637242810369/1056621127188881439/1392466785168785540
 
   ;; code for centering LaTeX previews -- a terrible idea
   (defun my/org-latex-preview-uncenter (ov)
@@ -1241,7 +1311,7 @@ Some eye candy in =org= buffers provided.
         org-special-ctrl-a/e t
         org-insert-heading-respect-content t
 
-        org-modern-table nil
+        org-modern-table nil ;; use a different package in `other' for pretty tables
         org-modern-todo nil
         org-modern-priority nil
         org-modern-progress 6
@@ -1292,6 +1362,12 @@ Some eye candy in =org= buffers provided.
 #+end_src
 ***** other
 Modern block styling from [[https://github.com/jdtsmith/org-modern-indent][org-modern-indent]].
+#+begin_src emacs-lisp :tangle packages.el
+(package! org-modern-indent :recipe
+  (:host github
+   :repo "jdtsmith/org-modern-indent"))
+#+end_src
+
 #+begin_src emacs-lisp :tangle no
 ;; (use-package! org-modern-indent
 ;;   :hook (org-mode . org-modern-indent-mode)
@@ -1314,6 +1390,10 @@ Modern block styling from [[https://github.com/jdtsmith/org-modern-indent][org-m
 
 Align tables with images and hidden markup correctly with [[https://github.com/casouri/valign][valign]].
 *NOTE*: Can be slow, especially with large =org= files.
+#+begin_src emacs-lisp :tangle packages.el
+(package! valign)
+#+end_src
+
 #+begin_src emacs-lisp
 (use-package! valign
   :hook (org-mode . valign-mode)
@@ -1413,6 +1493,10 @@ Set up =org-roam= along with keybindings that have the [[kbd:][<leader> r]] pref
 #+end_src
 
 =org-roam-ui= provides a pretty graph.
+#+begin_src emacs-lisp :tangle packages.el
+(package! org-roam-ui)
+#+end_src
+
 #+begin_src emacs-lisp
 (use-package! websocket :after org-roam)
 
@@ -1433,8 +1517,51 @@ Set up =org-roam= along with keybindings that have the [[kbd:][<leader> r]] pref
         (:prefix ("r" . "roam")
          :desc "Open ORUI" "u" #'org-roam-ui-open)))
 #+end_src
+*** other
+**** arduino
+#+begin_src emacs-lisp :tangle packages.el
+(package! arduino-mode)
+#+end_src
+
+#+begin_src emacs-lisp
+;; TODO add arduino support https://www.reddit.com/r/emacs/comments/17n4ti6/how_to_configure_arduino_lsp/
+;; (after! arduino-mode
+;;   (add-to-list 'eglot-server-programs
+;;                '(arduino-mode . ("arduino-language-server"
+;;                                  "-clangd" "/usr/bin/clangd"
+;;                                  "-cli" "/opt/homebrew/bin/arduino-cli"
+;;                                  "-cli-config" "~/Library/Arduino15/arduino-cli.yaml"
+;;                                  "-fqbn" "arduino:avr:uno"))))
+#+end_src
 ** :app
 *** calendar
+Use my forks of =calfw=, which is required for some of the configs here.
+#+begin_src emacs-lisp :tangle packages.el
+(unpin! calfw)
+
+(package! calfw :recipe
+  (:host github
+   :repo "kiwanami/emacs-calfw"
+   :fork (:repo "haji-ali/emacs-calfw"
+          :fork (:repo "michaelneuper/emacs-calfw"
+                 ;; FIXME fix branch not being checked out
+                 :branch "fix"))))
+
+(package! calfw-blocks :recipe
+  (:host github
+   :repo "haji-ali/calfw-blocks"
+   :fork (:repo "michaelneuper/calfw-blocks"
+          :branch "fix-dispatch-and-colors")))
+
+(package! maccalfw :recipe
+  (:host github
+   :repo "haji-ali/maccalfw"
+   :files ("maccalfw.el"
+           "ical-form.el"
+           ("src" . "src")))
+  :ignore (not (featurep :system 'macos)))
+#+end_src
+
 =calfw= displays holidays by default, let's turn that off.
 #+begin_src emacs-lisp
 (use-package! calfw
@@ -1452,7 +1579,7 @@ Set up =org-roam= along with keybindings that have the [[kbd:][<leader> r]] pref
 (use-package! calfw-blocks :after calfw)
 #+end_src
 
-Integrate with the mac calendar, requires using my forks of =calfw=, see =packages.el=.
+Integrate with the mac calendar, requires using my forks of =calfw=.
 #+begin_src emacs-lisp
 (use-package! maccalfw
   :if (featurep :system 'macos)

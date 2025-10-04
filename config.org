@@ -508,6 +508,17 @@ Set some =evil= variables and define some keybindings.
         ;; evil-want-minibuffer t
         +evil-want-o/O-to-continue-comments nil)
 
+  (when (eq doom-theme 'doom-gruvbox)
+          (defconst my/gruvbox-blue "#83a598") ; (doom-color 'blue)
+
+          (setq evil-normal-state-cursor  `(box    ,my/gruvbox-blue)
+                evil-insert-state-cursor  `(bar    ,my/gruvbox-blue)
+                evil-visual-state-cursor  `(hollow ,my/gruvbox-blue)
+                evil-replace-state-cursor `(hbar   ,my/gruvbox-blue)))
+
+  (custom-theme-set-faces! 'doom-gruvbox
+    `(region :background ,(doom-blend (doom-color 'blue) (doom-color 'bg) 0.2)))
+
   (map! :nv "~" #'repeat
         :prefix "g"
         :nv "y" #'evilnc-copy-and-comment-operator

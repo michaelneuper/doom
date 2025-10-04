@@ -293,6 +293,11 @@ Set a custom ascii banner for when emacs is used in the terminal, and a splash i
 (setq +doom-dashboard-ascii-banner-fn #'my-weebery-is-always-greater
       fancy-splash-image (file-name-concat doom-private-dir "images/logo.svg"))
 #+end_src
+*** indent-guides
+#+begin_src emacs-lisp
+(after! indent-bars
+  (setq indent-bars-display-on-blank-lines nil))
+#+end_src
 *** modeline
 Make the modeline look a bit nicer.
 #+begin_src emacs-lisp

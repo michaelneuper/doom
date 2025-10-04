@@ -46,6 +46,11 @@
 (package! colorful-mode)
 (package! rainbow-delimiters)
 ;; OTHER
+(package! whitespace4r :recipe
+  (:host github
+   :repo "twlz0ne/whitespace4r.el"
+   :files ("whitespace4r.el")))
+
 ;; CALENDAR
 (package! calfw :recipe
   (:host github

@@ -539,6 +539,16 @@ Add a toggle for =lispy-mode=.
       :prefix "t"
       :desc "Lispy" "L" #'my/toggle-lispy)
 #+end_src
+*** whitespace
+#+begin_src emacs-lisp
+(use-package! whitespace4r
+  :hook (prog-mode . whitespace4r-mode)
+  :config
+  (custom-set-faces!
+    `((whitespace4r-tab whitespace4r-space whitespace4r-hspace)
+      :background ,(face-attribute 'region :background)
+      :foreground ,(face-attribute 'font-lock-comment-face :foreground))))
+#+end_src
 ** :emacs
 *** dired
 Define a custom function to quickly find files in favourite directories.

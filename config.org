@@ -675,18 +675,18 @@ Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#in
       (when commit-hash
         (magit-show-commit commit-hash))))
 
-  (setq blamer-author-formatter " ✎ %s "
-        blamer-datetime-formatter "[%s]"
-        blamer-commit-formatter " ● %s"
+  (setq blamer-author-formatter "  %s"
+        blamer-datetime-formatter ", %s"
+        blamer-commit-formatter ""
         blamer-avatar-folder (file-name-concat doom-cache-dir "blamer/avatars/")
         blamer-bindings '(("<mouse-1>" . blamer-callback-show-commit-diff))
         blamer-min-offset 10)
 
   (custom-set-faces!
     `(blamer-face
-      :height 0.8
+      :height 0.85
       :foreground ,(face-attribute 'font-lock-comment-face :foreground)
-      :slant italic)))
+      :slant normal)))
 #+end_src
 ** :term
 *** eshell

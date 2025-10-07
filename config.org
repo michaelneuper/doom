@@ -224,9 +224,7 @@ Quickly search and filter through [[+roam2]] notes.
         deft-default-extension "org"
         deft-directory org-roam-directory)
 
-  (map! :leader
-        :prefix "r"
-        :desc "Search with deft" "s" #'deft))
+  (map! :leader :desc "Search with deft" "r s" #'deft))
 #+end_src
 *** doom-dashboard
 #+ATTR_ORG: :width 350
@@ -354,9 +352,7 @@ Make the modeline look a bit nicer.
     '(doom-modeline-buffer-file
       :weight normal)))
 
-  (map! :leader
-        :prefix "t"
-        :desc "Mode line" "m" #'global-hide-mode-line-mode))
+  (map! :leader :desc "Mode line" "t m" #'global-hide-mode-line-mode))
 #+end_src
 
 We expect the file encoding to be =LF UTF-8= so, only display it in modeline when it's something else.
@@ -421,19 +417,21 @@ Use =doom-variable-pitch-font= in the following modes:
 #+begin_src emacs-lisp
 ;; modified from https://discourse.doomemacs.org/t/cant-size-doom-variable-pitch-font/4572/2
 (use-package! mixed-pitch
-    :hook ((org-mode           . mixed-pitch-mode)
-           (org-roam-mode      . mixed-pitch-mode)
-           (doom-docs-org-mode . mixed-pitch-mode))
-    :config
-    (setq mixed-pitch-set-height t
-          variable-pitch-serif-font doom-variable-pitch-font)
+  :hook ((org-mode           . mixed-pitch-mode)
+         (org-roam-mode      . mixed-pitch-mode)
+         (doom-docs-org-mode . mixed-pitch-mode))
+  :config
+  (setq mixed-pitch-set-height t
+        variable-pitch-serif-font doom-variable-pitch-font)
 
-    (pushnew! mixed-pitch-fixed-pitch-faces
-              'warning
-              'org-drawer 'org-cite-key 'org-list-dt 'org-hide
-              'corfu-default 'font-latex-math-face)
+  (pushnew! mixed-pitch-fixed-pitch-faces
+            'warning
+            'org-drawer 'org-cite-key 'org-list-dt 'org-hide
+            'corfu-default 'font-latex-math-face)
 
-    (set-face-attribute 'variable-pitch nil :height 1.1))
+  (set-face-attribute 'variable-pitch nil :height 1.1)
+
+  (map! :leader :desc "Mixed pitch" "t M" #'mixed-pitch-mode))
 #+end_src
 
 Reduce text indent in =org= buffers caused by =mixed-pitch-mode=.
@@ -472,6 +470,13 @@ Reduce text indent in =org= buffers caused by =mixed-pitch-mode=.
       :weight bold)))
 #+end_src
 *** other
+**** solaire-mode
+This is a package built in to doom to distinguish between code buffers and popup buffers
+by giving popups a darker background.
+I'm not a fan, so I disable it.
+#+begin_src emacs-lisp :tangle packages.el
+(package! solaire-mode :disable t)
+#+end_src
 **** spacious-padding
 Add padding to emacs frames and windows with [[https://github.com/protesilaos/spacious-padding][spacious-padding]].
 #+begin_src emacs-lisp :tangle packages.el
@@ -505,16 +510,9 @@ Make rainbow delimiters toggleable.
            #'rainbow-delimiters-mode)
 
 ;; https://github.com/orgs/doomemacs/projects/5/views/1?pane=issue&itemId=117610828
-(map! :leader
-      :prefix "t"
-      :desc "Rainbow delimiters" "(" #'rainbow-delimiters-mode)
+(map! :leader :desc "Rainbow delimiters" "t (" #'rainbow-delimiters-mode)
 #+end_src
-**** solaire-mode
-This is a package built in to doom to distinguish between code buffers and popup buffers
-by giving popups a darker background.
-I'm not a fan, so I disable it.
 #+begin_src emacs-lisp :tangle packages.el
-(package! solaire-mode :disable t)
 #+end_src
 ** :editor
 *** evil
@@ -566,9 +564,7 @@ Add a toggle for =lispy-mode=.
     (lispy-mode 1)
     (message "Lispy mode enabled")))
 
-(map! :leader
-      :prefix "t"
-      :desc "Lispy" "L" #'my/toggle-lispy)
+(map! :leader :desc "Lispy" "t L" #'my/toggle-lispy)
 #+end_src
 *** whitespace
 #+begin_src emacs-lisp :tangle packages.el
@@ -660,18 +656,16 @@ Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#in
 
   (setq! dirvish-quick-access-entries my/favorite-dirs))
 
-(map! :leader
-      :prefix "o"
-      :desc "Dirvish Quick Access" "q" #'dirvish-quick-access)
+(map! :leader :desc "Dirvish Quick Access" "o q" #'dirvish-quick-access)
 #+end_src
 *** vc
 #+begin_src emacs-lisp
 (use-package! blamer
   :init
   (map! :leader
-        :desc "Git blame"   "tB" #'blamer-mode
-        :desc "Commit info" "gi" (lambda () (interactive)
-                                   (funcall (if (display-graphic-p)
+        :desc "Git blame"   "t B" #'blamer-mode
+        :desc "Commit info" "g i" (lambda () (interactive)
+                                    (funcall (if (display-graphic-p)
                                                 #'blamer-show-posframe-commit-info
                                               #'blamer-show-commit-info))))
   :config
@@ -897,7 +891,7 @@ Set up =gptel= to use copilot.
 
   (map! :map gptel-mode-map
         :leader
-        :prefix "ol"
+        :prefix "o l"
         :desc "Remove all context" "R" #'gptel-context-remove-all))
 #+end_src
 
@@ -950,8 +944,7 @@ let's change this to a nerd font light bulb instead.
     ;; :foreground ,(face-attribute 'font-lock-comment-face :background)))
   (map! :map eglot-mode-map
         :leader
-        :prefix "t"
-        :desc "Toggle inlay hints" "h" #'eglot-inlay-hints-mode))
+        :desc "Toggle inlay hints" "t h" #'eglot-inlay-hints-mode))
 #+end_src
 *** magit
 Add icons to =magit= and make the commit summary bold.
@@ -1408,8 +1401,7 @@ Customise drag-and-drop support for images and files, insert them into the =imag
   (setq-default org-download-image-dir "images")
   (map! :map org-mode-map
         :localleader
-        :prefix "a"
-        :desc "Rename image at point" "C" #'org-download-rename-at-point)
+        :desc "Rename image at point" "a C" #'org-download-rename-at-point)
   :config
   (setq org-download-method 'directory
         org-download-link-format "[[file:images/%s]]\n"

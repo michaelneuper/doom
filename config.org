@@ -512,6 +512,27 @@ Make rainbow delimiters toggleable.
 ;; https://github.com/orgs/doomemacs/projects/5/views/1?pane=issue&itemId=117610828
 (map! :leader :desc "Rainbow delimiters" "t (" #'rainbow-delimiters-mode)
 #+end_src
+**** breadcrumb
+Enable breadcrumbs.
+#+begin_src emacs-lisp :tangle packages.el
+(package! breadcrumb)
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package! breadcrumb
+;;  :hook (prog-mode . breadcrumb-mode)
+  :config
+  (setq breadcrumb-imenu-crumb-separator " › ")
+
+  (custom-set-faces!
+    `((breadcrumb-face breadcrumb-project-leaf-face)
+      :family ,my/mono-font)
+    `((breadcrumb-project-base-face breadcrumb-project-leaf-face breadcrumb-project-crumbs-face)
+      :foreground ,(face-attribute 'font-lock-comment-face :foreground)
+      :family ,my/mono-font))
+
+  (map! :leader :desc "Breadcrumbs" "t ." #'breadcrumb-local-mode))
+#+end_src
 #+begin_src emacs-lisp :tangle packages.el
 #+end_src
 ** :editor

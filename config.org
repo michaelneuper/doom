@@ -1549,6 +1549,22 @@ Set up =org-roam= along with keybindings that have the [[kbd:][<leader> r]] pref
 ;;                                  "-cli-config" "~/Library/Arduino15/arduino-cli.yaml"
 ;;                                  "-fqbn" "arduino:avr:uno"))))
 #+end_src
+**** asm
+#+begin_src emacs-lisp :tangle packages.el
+(package! nasm-mode)
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package! nasm-mode
+  :hook (asm-mode . nasm-mode)
+  :config
+  (setq nasm-after-mnemonic-whitespace :space)
+  (custom-set-faces!
+    ;; `(nasm-instructions :foreground ,(doom-color 'cyan))
+    ;; `(nasm-registers    :foreground ,(doom-color 'violet))
+    ;; `(nasm-local-labels :foreground ,(doom-color 'yellow))
+    ))
+#+end_src
 ** :app
 *** calendar
 Use my forks of =calfw=, which is required for some of the configs here.

@@ -756,7 +756,7 @@ Customise eshell:
   ;; modified from https://github.com/doomemacs/doomemacs/blob/master/modules/term/eshell/autoload/prompts.el
   (defun my/+eshell--current-git-branch ()
     "Return current Git branch prefixed by remote icon, or \"\" if none.
-Formats as: propertized \" at <icon> on  <branch-name>\""
+Formats as: propertized \" at <icon> on  <branch-name>\""
     (let* (;; probe remote URL
            (remote-res    (doom-call-process "git" "ls-remote" "--get-url"))
            (remote-status (car remote-res))
@@ -791,7 +791,7 @@ Formats as: propertized \" at <icon> on  <branch-name>\""
               (concat
                (propertize (format " at %s on " icon)
                            'face 'default)
-               (propertize (format " %s" branch)
+               (propertize (format " %s" branch)
                            'face '+eshell-prompt-git-branch)))))
       (or p-branch "")))
 
@@ -962,10 +962,9 @@ let's change this to a nerd font light bulb instead.
   (custom-set-faces!
     `(eglot-inlay-hint-face
       :foreground ,(doom-color 'base5)
-      :height 0.9
-      :family ,my/sans-serif-font))
+      :height 0.9))
+  ;; :family ,my/sans-serif-font))
 
-    ;; :foreground ,(face-attribute 'font-lock-comment-face :background)))
   (map! :map eglot-mode-map
         :leader
         :desc "Toggle inlay hints" "t h" #'eglot-inlay-hints-mode))
@@ -1017,7 +1016,7 @@ Create some keybindings for commonly used commands.
 *** tree-sitter
 #+begin_src emacs-lisp
 (after! treesit
-  (setq treesit-font-lock-level 4
+  (setq treesit-font-lock-level 3
         treesit-auto-install-grammar 'always))
 #+end_src
 ** :lang

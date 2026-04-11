@@ -305,9 +305,10 @@ Set a custom ascii banner for when emacs is used in the terminal, and a splash i
       fancy-splash-image (file-name-concat doom-private-dir "images/logo.svg"))
 #+end_src
 *** indent-guides
+Disable =indent-bars= by default.
 #+begin_src emacs-lisp
 (after! indent-bars
-  (setq indent-bars-display-on-blank-lines nil))
+  (add-hook '+indent-guides-inhibit-functions (lambda () t)))
 #+end_src
 *** modeline
 Make the modeline look a bit nicer.

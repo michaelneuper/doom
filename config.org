@@ -105,6 +105,11 @@ Some macOS specific settings.
 
   (map! :nvi "M-v" #'yank))
 #+end_src
+
+Hide those pesky =.DS_Store= files.
+#+begin_src emacs-lisp
+(add-to-list 'completion-ignored-extensions ".DS_Store")
+#+end_src
 ** Visual Enchancements
 *** Theme & Fonts
 Use the gruvbox theme and set some fonts.

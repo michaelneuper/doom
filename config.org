@@ -1036,6 +1036,11 @@ Configure =cc-mode=.
                               (c-ts-mode . doxygen))
         whitespace-style '(face trailing lines-tail empty))
         indent-tabs-mode t)
+(after! eglot
+  (if (featurep :system 'macos)
+      (add-to-list 'eglot-server-programs
+                   '((c-mode c++-mode cc-mode c-ts-mode)
+                     . ("/opt/homebrew/opt/llvm/bin/clangd" "-j=3" "--clang-tidy")))))
 
 (add-hook! '(c-mode-common-hook c-ts-mode-hook)
   (c-setup-doc-comment-style))

@@ -167,8 +167,8 @@ Make escape characters like =\n= orange when the =gruvbox= theme is used like in
 *** Lines
 Enable relative line numbers and make their slant normal (not italic).
 #+begin_src emacs-lisp
-;; (setq display-line-numbers-type 'relative)
-(setq display-line-numbers-type 'visual)
+(setq display-line-numbers-type 'visual
+      display-line-numbers-width-start t) ;; fixes weird horizontal jumping in long org files
 
 (add-hook! 'display-line-numbers-mode-hook
   (custom-set-faces!

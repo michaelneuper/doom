@@ -392,6 +392,11 @@ Only relevant if you have [[+roam2]].
 ;;        (subst-char-in-string ?_ ?  buffer-file-name))
 ;;     (funcall orig-fun)))
 #+end_src
+*** popup
+#+begin_src emacs-lisp
+(set-popup-rules!
+  '(("^\\*compilation" :size 0.35 :select t)))
+#+end_src
 *** tabs
 Disable tabs by default and make them toggleable.
 #+begin_src emacs-lisp

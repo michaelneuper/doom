@@ -1,22 +1,25 @@
-name: Publish Org Config
+name: Publish to GitHub Pages
 
 on:
   push:
     branches:
-      - main  # or your default branch
+      - main
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - name: Check out
+        uses: actions/checkout@v1
 
-      - name: Export Org Files
-        uses: tecosaur/org-knit-action@v0.3
+      - name: Install Emacs
+        run: sudo apt install emacs-nox --yes
+
+      - name: Build the site
+        run: ./build.sh
+
+      - name: Publish generated content to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@4.1.4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
-          export: html
-          files: config.org
-          force_orphan: true
+          folder: public

@@ -115,7 +115,8 @@ Hide those pesky =.DS_Store= files.
 Use the gruvbox theme and set some fonts.
 The fonts need to be installed on your machine and make sure to run ~M-x nerd-icons-install-fonts~.
 #+ATTR_ORG: :width 500
-[[file:images/gruvbox-colorscheme.png]]
+[[https://raw.githubusercontent.com/michaelneuper/doom/main/images/gruvbox-colorscheme.png]]
+
 #+begin_src emacs-lisp
 (setq doom-theme 'doom-gruvbox
       doom-gruvbox-dark-variant "medium"
@@ -236,7 +237,7 @@ Quickly search and filter through [[+roam2]] notes.
 #+end_src
 *** doom-dashboard
 #+ATTR_ORG: :width 350
-[[file:images/dashboard.png]]
+[[https://raw.githubusercontent.com/michaelneuper/doom/main/images/dashboard.png]]
 
 Remove the shortmenu and footer from the dashboard.
 #+begin_src emacs-lisp
@@ -1174,6 +1175,7 @@ Set some =org= variables.
 (setq org-directory "~/Documents/Org"
       org-use-property-inheritance t ; fix weird issue with src blocks
       org-startup-with-inline-images t
+      org-display-remote-inline-images 'cache
       org-edit-src-content-indentation 0)
 
 ;; FIXME blurry previews when using #+attr_org: :width

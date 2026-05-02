@@ -74,6 +74,13 @@ Make emacs faster.
       doom-localleader-alt-key "M-SPC l")
 #+end_src
 
+Some useful keybindings for the minbuffer.
+#+begin_src emacs-lisp
+(map! :map minibuffer-local-map
+      "C-k" #'delete-minibuffer-contents
+      "C-p" #'yank)
+#+end_src
+
 Some =which-key= adjustments.
 #+begin_src emacs-lisp
 (use-package! which-key
@@ -96,14 +103,14 @@ Some macOS specific settings.
 - For thinner fonts on macOS run ~defaults write org.gnu.Emacs AppleFontSmoothing -int 0~
 - To revert run ~defaults delete org.gnu.Emacs AppleFontSmoothing~
 #+begin_src emacs-lisp
-(if (featurep :system 'macos)
-    (setq mac-command-modifier 'meta
-          mac-option-modifier 'none
-          mac-right-option-modifier 'super
-          ns-use-proxy-icon nil ; disable file icon in titlebar
-          ns-use-native-fullscreen t)
+(when (featurep :system 'macos)
+  (setq mac-command-modifier 'meta
+        mac-option-modifier 'none
+        mac-right-option-modifier 'super
+        ns-use-proxy-icon nil ; disable file icon in titlebar
+        ns-use-native-fullscreen t)
 
-  (map! :nvi "M-v" #'yank))
+  (display-battery-mode 1))
 #+end_src
 
 Hide those pesky =.DS_Store= files.

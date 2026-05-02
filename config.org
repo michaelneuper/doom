@@ -155,7 +155,8 @@ Add some missing file icons to =nerd-fonts=.
              ("ms"    nerd-icons-mdicon  "nf-md-file_document" :face nerd-icons-silver)
              ("1"     nerd-icons-mdicon  "nf-md-file_document" :face nerd-icons-silver)
              ("ps"    nerd-icons-mdicon  "nf-md-vector_curve"  :face nerd-icons-dred)
-             ("typ"   nerd-icons-flicon  "nf-linux-typst"      :face nerd-icons-dblue)))
+             ("typ"   nerd-icons-flicon  "nf-linux-typst"      :face nerd-icons-dblue)
+             ("c3"    nerd-icons-codicon "nf-cod-file_code"    :face nerd-icons-blue)))
     (add-to-list 'nerd-icons-extension-icon-alist entry)))
 #+end_src
 
@@ -1558,6 +1559,26 @@ Set up =org-roam= along with keybindings that have the [[kbd:][<leader> r]] pref
          :desc "Open ORUI" "u" #'org-roam-ui-open)))
 #+end_src
 *** other
+**** c3
+#+begin_src emacs-lisp :tangle packages.el
+(package! c3-ts-mode :recipe
+  (:host github
+   :repo "c3lang/c3-ts-mode"))
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package! c3-ts-mode
+  :mode ("\\.c3\\'" . c3-ts-mode)
+  :init
+  (set-tree-sitter! 'c3-mode 'c3-ts-mode
+    '((c3 :url "https://github.com/c3lang/tree-sitter-c3")))
+
+  :config
+  (setq c3-ts-mode-indent-offset 4)
+  (set-eglot-client! '(c3-mode c3-ts-mode)
+                     (list (expand-file-name "~/Downloads/server/bin/release/c3lsp")))
+  )
+#+end_src
 **** arduino
 #+begin_src emacs-lisp :tangle packages.el
 (package! arduino-mode)

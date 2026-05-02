@@ -706,6 +706,13 @@ Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#in
 (map! :leader :desc "Dirvish Quick Access" "o q" #'dirvish-quick-access)
 #+end_src
 *** vc
+Configure =blamer= for inline git blame annotations.
+Toggle annotations with =SPC t B=, and show detailed commit info in a posframe with =SPC g i=.
+Clicking an annotation opens the full diff in Magit.
+#+begin_src emacs-lisp :tangle packages.el
+(package! blamer)
+#+end_src
+
 #+begin_src emacs-lisp
 (use-package! blamer
   :init

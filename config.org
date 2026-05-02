@@ -323,6 +323,8 @@ Disable =indent-bars= by default.
 #+end_src
 *** modeline
 Make the modeline look a bit nicer.
+[[https://raw.githubusercontent.com/michaelneuper/doom/main/images/modeline.png]]
+
 #+begin_src emacs-lisp
 (remove-hook 'doom-modeline-mode-hook #'size-indication-mode)
 
@@ -614,6 +616,9 @@ Add a toggle for =lispy-mode=.
 (map! :leader :desc "Lispy" "t L" #'my/toggle-lispy)
 #+end_src
 *** whitespace
+This package shows whitespace characters like tabs and spaces in the selected region.
+[[https://raw.githubusercontent.com/michaelneuper/doom/main/images/whitespace.png]]
+
 #+begin_src emacs-lisp :tangle packages.el
 (package! whitespace4r :recipe
   (:host github
@@ -1289,6 +1294,8 @@ Requires [[latex]] and [[evil]] to be enabled.
 #+end_src
 
 Set up =LaTeX= previews in =org= buffers.
+[[https://raw.githubusercontent.com/michaelneuper/doom/main/images/latex-preview.png]]
+
 #+begin_src emacs-lisp
 ;; TODO enable latex previews in org-roam and latex buffers (use xenops)
 

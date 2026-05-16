@@ -951,6 +951,7 @@ so I use this environment variable to disable them when running inside vterm.
 (setq eros-eval-result-prefix "⇒ ") ;; or use ⟹
 #+end_src
 *** llm
+**** gptel
 Set up =gptel= to use copilot.
 #+begin_src emacs-lisp
 (after! gptel
@@ -1001,6 +1002,79 @@ Install some tools from the =llm-tool-collection= package.
 
   (mapcar (apply-partially #'apply #'gptel-make-tool)
           (llm-tool-collection-get-all)))
+#+end_src
+**** agent-shell
+#+begin_src emacs-lisp :tangle packages.el
+(package! shell-maker)
+(package! acp)
+(package! agent-shell)
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package! shell-maker)
+
+(use-package! agent-shell
+  :after shell-maker
+  :config
+  (require 'shell-maker)
+  (require 'agent-shell)
+  :bind (:map agent-shell-mode-map
+              ("C-RET" . newline)))
+#+end_src
+
+Configure sidebar.
+#+begin_src emacs-lisp :tangle packages.el
+(package! agent-shell-sidebar :recipe
+  (:host github
+   :repo "cmacrae/agent-shell-sidebar"))
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package! agent-shell-sidebar
+  :after agent-shell
+  :custom
+  (agent-shell-sidebar-width "30%")
+  (agent-shell-sidebar-default-config
+   (agent-shell-openai-make-codex-config)))
+
+;; (map! :leader "t a" #'agent-shell-sidebar-toggle)
+#+end_src
+
+Add a cute pet.
+#+begin_src emacs-lisp :tangle packages.el
+(package! agent-shell-pet :recipe
+  (:host github
+   :repo "lgmoneda/agent-shell-pet"
+   :files ("*.el" "pets" "renderers")))
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package! agent-shell-pet
+  :after agent-shell
+  :custom
+  (agent-shell-pet-id "rick")
+  (agent-shell-pet-size 'small)
+  :config
+  (global-agent-shell-pet-mode 1)
+
+  (if (featurep :system 'macos)
+      (setq agent-shell-pet-renderer 'macos-native)))
+#+end_src
+
+Some enhancements on mac.
+#+begin_src emacs-lisp :tangle packages.el
+(package! agent-shell-macext :recipe
+  (:host github
+   :repo "cxa/agent-shell-macext")
+  :ignore (not (featurep :system 'macos)))
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package! agent-shell-macext
+  :if (featurep :system 'macos)
+  :hook (agent-shell-mode . agent-shell-macext-setup)
+  :custom
+    (agent-shell-macext-notifications t))
 #+end_src
 *** lsp +eglot
 By default =eglot-code-action-indicator= is set to a lightbulb emoji (💡) which

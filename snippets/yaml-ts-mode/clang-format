@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: .clang-format
+# key: clang-format
+# condition: (string-match-p "\\.clang-format" (buffer-file-name))
+# --
+BasedOnStyle: LLVM
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+IndentCaseLabels: true
+AlignConsecutiveDeclarations: true
+AlignTrailingComments: true
+AllowShortIfStatementsOnASingleLine: Always
+InsertNewlineAtEOF: true
+$0

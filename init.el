@@ -162,7 +162,7 @@
        swift             ; who asked for emoji variables?
        ;;terra             ; Earth and Moon in alignment for performance.
        (web +tree-sitter)  ; the tubes
-       yaml              ; JSON, but readable
+       (yaml +tree-sitter) ; JSON, but readable
        (zig +lsp +tree-sitter) ; C, but simpler
 
        :email

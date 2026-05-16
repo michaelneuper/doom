@@ -1148,38 +1148,22 @@ Create some keybindings for commonly used commands.
 *** cc
 Configure =cc-mode=.
 #+begin_src emacs-lisp
-(after! cc-mode
-  (setf (alist-get 'c-mode c-default-style) "k&r")
+(after! (cc-mode c-ts-mode)
   (setq c-basic-offset 4
         c-doc-comment-style '((c-mode    . doxygen)
                               (c-ts-mode . doxygen))
-        whitespace-style '(face trailing lines-tail empty))
-        indent-tabs-mode t)
+        whitespace-style '(face trailing lines-tail empty)))
+
 (after! eglot
   (if (featurep :system 'macos)
       (add-to-list 'eglot-server-programs
                    '((c-mode c++-mode cc-mode c-ts-mode)
                      . ("/opt/homebrew/opt/llvm/bin/clangd" "-j=3" "--clang-tidy")))))
 
-(add-hook! '(c-mode-common-hook c-ts-mode-hook)
-  (c-setup-doc-comment-style))
-
 (add-hook! '(c-mode-hook c-ts-mode-hook)
   (unless (or (file-exists-p "makefile")
               (file-exists-p "Makefile"))
     (setq-local compile-command "cc -Wall -o main main.c")))
-#+end_src
-
-Make =#ifdef 0= blocks appear as comments.
-#+begin_src emacs-lisp
-(add-hook! '(c-mode-hook c-ts-mode-hook)
-  (defun +c-hideifdef-init ()
-    "Enable hide-ifdef-mode with shadowing, auto-hiding, and hidden directive lines."
-    (hide-ifdef-mode 1)
-    (setq-local hide-ifdef-shadow t
-                hide-ifdef-initially t
-                hide-ifdef-lines t)
-    (hide-ifdefs)))
 #+end_src
 
 Fix issue where two new lines are inserted after ={=.
@@ -1189,6 +1173,15 @@ Fix issue where two new lines are inserted after ={=.
     (defun +eglot--rm-eglot--post-self-insert-hook ()
       ;; remove eglot’s post-self-insert-hook in current buffer
       (remove-hook 'post-self-insert-hook #'eglot--post-self-insert-hook t))))
+#+end_src
+
+Enable =yaml-ts-mode= in =.clang-format= files.
+#+begin_src emacs-lisp
+(add-to-list 'auto-mode-alist
+             (cons "\\.clang-format\\'"
+                   (if (modulep! :lang yaml +tree-sitter)
+                       'yaml-ts-mode
+                     'yaml-mode)))
 #+end_src
 *** java
 Set indentation level for =java-mode= to 2.

@@ -1,6 +1,6 @@
 #+title: Doom Emacs Config
 #+author: Michael Neuper
-#+startup: content noinlineimages
+#+startup: content noinlineimages nolatexpreview
 
 This is my literate doom emacs config.
 [[#basic][Basic]] sets up some basic emacs and doom configurations.
@@ -67,7 +67,7 @@ Make emacs faster.
       make-backup-files t)
 
 ;; refresh buffers when files change on disk
-(global-auto-revert-mode 1)
+(setq auto-revert-avoid-polling t)
 
 ;; kill emacs without confiming
 (setq confirm-kill-emacs nil)
@@ -91,8 +91,6 @@ Some =which-key= adjustments.
   (setq which-key-idle-delay 0.5
         which-key-allow-multiple-replacements t)
   :config
-  (which-key-mode 1)
-
   ;; modified from https://tecosaur.github.io/emacs-config/config.html#which-key
   (pushnew!
    which-key-replacement-alist
@@ -184,13 +182,12 @@ Enable relative line numbers and make their slant normal (not italic).
         display-line-numbers-width-start t
         display-line-numbers-grow-only t)
 
-(add-hook! 'display-line-numbers-mode-hook
-  (custom-set-faces!
-    '((line-number line-number-current-line)
-      :slant normal)
-    `(line-number-current-line
-      :background ,(face-attribute 'line-number :background)
-      :foreground ,(doom-color 'fg))))
+(custom-set-faces!
+  '((line-number line-number-current-line)
+    :slant normal)
+  `(line-number-current-line
+    :background ,(face-attribute 'line-number :background)
+    :foreground ,(doom-color 'fg)))
 #+end_src
 
 Only highlight the current line in programming modes and =dired=.
@@ -246,7 +243,7 @@ Disable corfu's auto-popups and preselect the first candidate.
 Quickly search and filter through [[+roam2]] notes.
 #+begin_src emacs-lisp
 (use-package! deft
-  :after org-roam
+  :commands deft
   :config
   (setq deft-recursive t
         deft-use-filter-string-for-filename t
@@ -424,6 +421,10 @@ Only relevant if you have [[+roam2]].
 Disable tabs by default and make them toggleable.
 #+begin_src emacs-lisp
 (use-package! centaur-tabs
+  :commands (centaur-tabs-mode
+             centaur-tabs-local-mode
+             centaur-tabs-forward
+             centaur-tabs-backward)
   :init
   (remove-hook 'doom-first-file-hook #'centaur-tabs-mode)
   (when (daemonp)
@@ -532,7 +533,9 @@ Add padding to emacs frames and windows with [[https://github.com/protesilaos/sp
            :tab-width 4 ;; ?
            :right-divider-width 15
            :left-fringe-width 8))
-  (spacious-padding-mode 1))
+
+  (when (display-graphic-p)
+    (spacious-padding-mode 1)))
 #+end_src
 **** rainbow-delimiters
 #+begin_src emacs-lisp :tangle packages.el
@@ -557,7 +560,9 @@ Enable breadcrumbs.
 
 #+begin_src emacs-lisp
 (use-package! breadcrumb
-;;  :hook (prog-mode . breadcrumb-mode)
+  :commands (breadcrumb-local-mode breadcrumb-mode)
+  :init
+  (map! :leader :desc "Breadcrumbs" "t ." #'breadcrumb-local-mode)
   :config
   (setq breadcrumb-imenu-crumb-separator " › ")
 
@@ -566,9 +571,7 @@ Enable breadcrumbs.
       :family ,my/mono-font)
     `((breadcrumb-project-base-face breadcrumb-project-leaf-face breadcrumb-project-crumbs-face)
       :foreground ,(face-attribute 'font-lock-comment-face :foreground)
-      :family ,my/mono-font))
-
-  (map! :leader :desc "Breadcrumbs" "t ." #'breadcrumb-local-mode))
+      :family ,my/mono-font)))
 #+end_src
 #+begin_src emacs-lisp :tangle packages.el
 #+end_src
@@ -736,6 +739,9 @@ Clicking an annotation opens the full diff in Magit.
 
 #+begin_src emacs-lisp
 (use-package! blamer
+  :commands (blamer-mode
+             blamer-show-posframe-commit-info
+             blamer-show-commit-info)
   :init
   (map! :leader
         :desc "Git blame"   "t B" #'blamer-mode
@@ -1143,9 +1149,10 @@ Install some tools from the =llm-tool-collection= package.
 #+end_src
 
 #+begin_src emacs-lisp
-(use-package! shell-maker)
+(use-package! shell-maker :defer t)
 
 (use-package! agent-shell
+  :commands agent-shell
   :after shell-maker
   :config
   (require 'shell-maker)
@@ -1163,6 +1170,7 @@ Configure sidebar.
 
 #+begin_src emacs-lisp
 (use-package! agent-shell-sidebar
+  :commands agent-shell-sidebar-toggle
   :after agent-shell
   :custom
   (agent-shell-sidebar-width "30%")
@@ -1274,7 +1282,7 @@ Create some keybindings for commonly used commands.
 #+begin_src emacs-lisp
 (after! treesit
   (setq treesit-font-lock-level 3
-        treesit-auto-install-grammar 'always))
+        treesit-auto-install-grammar 'ask))
 #+end_src
 ** :lang
 *** cc
@@ -1287,7 +1295,7 @@ Configure =cc-mode=.
         whitespace-style '(face trailing lines-tail empty)))
 
 (after! eglot
-  (if (featurep :system 'macos)
+  (if (and (featurep :system 'macos) (file-executable-p "/opt/homebrew/opt/llvm/bin/clangd"))
       (add-to-list 'eglot-server-programs
                    '((c-mode c++-mode cc-mode c-ts-mode)
                      . ("/opt/homebrew/opt/llvm/bin/clangd" "-j=3" "--clang-tidy")))))
@@ -1413,7 +1421,7 @@ Set some =org= variables.
 (setq org-directory "~/Documents/Org"
       org-use-property-inheritance t ; fix weird issue with src blocks
       org-startup-with-inline-images t
-      org-display-remote-inline-images 'cache
+      ;; org-display-remote-inline-images 'cache
       org-edit-src-content-indentation 0)
 
 ;; FIXME blurry previews when using #+attr_org: :width
@@ -1669,8 +1677,12 @@ Align tables with images and hidden markup correctly with [[https://github.com/c
 #+end_src
 
 #+begin_src emacs-lisp
+(defun my/valign-mode-maybe ()
+  (when (< (buffer-size) 50000)
+    (valign-mode 1)))
+
 (use-package! valign
-  :hook (org-mode . valign-mode)
+  :hook (org-mode . my/valign-mode-maybe)
   :config (setq valign-fancy-bar t))
 #+end_src
 **** +dragndrop
@@ -1692,16 +1704,31 @@ Customise drag-and-drop support for images and files, insert them into the =imag
 **** +roam2
 Set up =org-roam= along with keybindings that have the [[kbd:][<leader> r]] prefix.
 #+begin_src emacs-lisp
+(remove-hook 'org-load-hook #'+org-init-roam-h)
+
 (use-package! org-roam
   :defer t
-  :config
-  ;; variables
+  :init
   (setq org-roam-directory (file-truename "~/Notes")
         org-roam-db-location (file-truename "~/Notes/org-roam.db")
         org-attach-id-dir "assets/")
 
+  ;; copied from https://hieuphay.com/doom-emacs-config/#customizing-main-interface
+  (defun my/org-roam-node-find-by-mtime ()
+    "Find a node by last modified date."
+    (interactive)
+    (require 'org-roam)
+    (find-file
+     (org-roam-node-file
+      (org-roam-node-read nil nil #'org-roam-node-read-sort-by-file-mtime))))
+
+  (map! :leader
+        (:prefix ("r" . "roam")
+         :desc "Find node" "f" #'my/org-roam-node-find-by-mtime))
+  :config
   (org-roam-db-autosync-enable)
 
+  ;; TODO use built-in func https://github.com/doomemacs/doomemacs/commit/849b1e4aa8a5089943c0254e68db4a0bc40371d9
   ;; custom `org-roam' functions
   (defun my/org-roam--after-point ()
     "If in Evil normal state and not at EOL, move one char forward."
@@ -1742,14 +1769,6 @@ Set up =org-roam= along with keybindings that have the [[kbd:][<leader> r]] pref
       (run-hooks 'org-roam-insert-node-hook)
       (forward-char)))
 
-  ;; copied from https://hieuphay.com/doom-emacs-config/#customizing-main-interface
-  (defun my/org-roam-node-find-by-mtime ()
-    "Find a node by last modified date."
-    (interactive)
-    (find-file
-     (org-roam-node-file
-      (org-roam-node-read nil nil #'org-roam-node-read-sort-by-file-mtime))))
-
   ;; keybindings
   (map! :map org-roam-mode-map
         :leader
@@ -1757,7 +1776,6 @@ Set up =org-roam= along with keybindings that have the [[kbd:][<leader> r]] pref
          :desc "Add alias"          "a" #'org-roam-alias-add
          :desc "Remove alias"       "A" #'org-roam-alias-remove
          :desc "Toggle roam buffer" "b" #'org-roam-buffer-toggle
-         :desc "Find node"          "f" #'my/org-roam-node-find-by-mtime
          :desc "Insert node"        "i" #'my/org-roam-insert-lowercase
          :desc "Insert title"       "I" #'my/org-roam-insert-custom-title
          :desc "Add tag"            "t" #'org-roam-tag-add

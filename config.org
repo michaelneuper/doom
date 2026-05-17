@@ -935,6 +935,138 @@ so I use this environment variable to disable them when running inside vterm.
         :ni "C-k" #'vterm-send-up
         :i  "C-b" #'backward-char
         :i  "C-f" #'forward-char))
+
+(map! :leader
+      :prefix "o"
+      :desc "Toggle vterm popup" "v" #'+vterm/toggle
+      :desc "Open vterm here" "V" #'+vterm/here)
+#+end_src
+*** other
+**** ghostel
+#+begin_src emacs-lisp :tangle packages.el
+(package! ghostel)
+(package! evil-ghostel
+  :ignore (not (featurep 'evil)))
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package! ghostel
+  :hook (ghostel-mode . mode-line-invisible-mode)
+  :init
+  (require 'ghostel-compile)
+  (ghostel-compile-global-mode 1)
+
+  (set-popup-rule! "^\\*doom:ghostel-popup:" :size 0.25 :vslot -4 :select t :quit nil :ttl 0)
+
+  (setq ghostel-module-auto-install 'download))
+
+(use-package! evil-ghostel
+  :after (ghostel evil)
+  :if (featurep 'evil)
+  :hook (ghostel-mode . evil-ghostel-mode))
+#+end_src
+
+Fix nerd fonts being displayed too small.
+#+begin_src emacs-lisp
+(after! ghostel
+  (defun my/ghostel--display-without-height (display)
+    "Return DISPLAY without Ghostel's glyph-height clamp."
+    (cond
+     ((and (listp display)
+           (assq 'height display))
+      (delq nil
+            (mapcar (lambda (spec)
+                      (unless (eq (car-safe spec) 'height)
+                        spec))
+                    display)))
+     (t display)))
+
+  (defun my/ghostel--fix-nerd-icon-heights (&rest _)
+    "Remove Ghostel display-height clamps from Nerd Font private glyphs."
+    (when (derived-mode-p 'ghostel-mode)
+      (let ((inhibit-read-only t)
+            (end (point-max)))
+        (save-excursion
+          (goto-char (point-min))
+          (while (< (point) end)
+            (let ((ch (char-after))
+                  (display (get-text-property (point) 'display)))
+              (when (and ch display
+                         (or (and (>= ch #xe000) (<= ch #xf8ff))
+                             (and (>= ch #xf0000) (<= ch #xffffd))
+                             (and (>= ch #x100000) (<= ch #x10fffd))))
+                (let ((new-display (my/ghostel--display-without-height display)))
+                  (if new-display
+                      (put-text-property (point) (1+ (point))
+                                         'display new-display)
+                    (remove-text-properties
+                     (point) (1+ (point)) '(display nil))))))
+            (forward-char 1))))))
+
+  (advice-add #'ghostel--delayed-redraw
+              :after #'my/ghostel--fix-nerd-icon-heights)
+  (add-hook 'ghostel-mode-hook #'my/ghostel--fix-nerd-icon-heights))
+#+end_src
+
+Enable a ghostel popup similar to doom's =vterm= popup.
+#+begin_src emacs-lisp
+(defun my/ghostel-toggle (arg)
+  "Toggle a Ghostel popup window at project root.
+
+If prefix ARG is non-nil, recreate the Ghostel buffer in the current
+project's root."
+  (interactive "P")
+  (my/ghostel--configure-project-root-and-display
+   arg
+   (lambda ()
+     (let ((buffer-name
+            (format "*doom:ghostel-popup:%s*"
+                    (if (bound-and-true-p persp-mode)
+                        (safe-persp-name (get-current-persp))
+                      "main")))
+           confirm-kill-processes
+           current-prefix-arg)
+       (when arg
+         (let ((buffer (get-buffer buffer-name))
+               (window (get-buffer-window buffer-name)))
+           (when (buffer-live-p buffer)
+             (kill-buffer buffer))
+           (when (window-live-p window)
+             (delete-window window))))
+       (if-let* ((win (get-buffer-window buffer-name)))
+           (delete-window win)
+         (let ((ghostel-buffer-name buffer-name))
+           (ghostel)))
+       (get-buffer buffer-name)))))
+
+(defun my/ghostel-here (arg)
+  "Open a Ghostel buffer in the current window at project root.
+
+If prefix ARG is non-nil, cd into `default-directory' instead of project root."
+  (interactive "P")
+  (my/ghostel--configure-project-root-and-display
+   arg
+   (lambda ()
+     (let (display-buffer-alist)
+       (ghostel)))))
+
+(defun my/ghostel--configure-project-root-and-display (arg display-fn)
+  "Set project root context and display Ghostel using DISPLAY-FN.
+
+If prefix ARG is non-nil, cd into `default-directory' instead of project root."
+  (let* ((project-root (or (doom-project-root) default-directory))
+         (default-directory
+          (if arg
+              default-directory
+            project-root)))
+    (setenv "PROOT" project-root)
+    (funcall display-fn)))
+
+(map! :leader
+      :desc "Ghostel popup" "o t" #'my/ghostel-toggle
+      :desc "Ghostel" "o T" #'my/ghostel-here)
+#+end_src
+
 #+end_src
 ** :tools
 *** debugger

@@ -1089,6 +1089,11 @@ If prefix ARG is non-nil, cd into `default-directory' instead of project root."
 (setq eros-eval-result-prefix "⇒ ") ;; or use ⟹
 #+end_src
 *** llm
+#+begin_src emacs-lisp
+(defvar my/llm-sidebar-width 0.4
+  "Width fraction for LLM sidebars.")
+#+end_src
+
 **** gptel
 Set up =gptel= to use copilot.
 #+begin_src emacs-lisp
@@ -1173,7 +1178,7 @@ Configure sidebar.
   :commands agent-shell-sidebar-toggle
   :after agent-shell
   :custom
-  (agent-shell-sidebar-width "30%")
+  (agent-shell-sidebar-width (format "%d%%" (* 100 my/llm-sidebar-width)))
   (agent-shell-sidebar-default-config
    (agent-shell-openai-make-codex-config)))
 
@@ -1216,6 +1221,146 @@ Some enhancements on mac.
   :custom
     (agent-shell-macext-notifications t))
 #+end_src
+
+**** codex-ide
+#+begin_src emacs-lisp :tangle packages.el
+(package! codex-ide :recipe
+  (:host github
+   :repo "dgillis/emacs-codex-ide"))
+#+end_src
+
+Codex package setup and keybindings.
+#+begin_src emacs-lisp
+(use-package! codex-ide
+  :commands codex-ide-menu
+  :hook (codex-ide-session-mode . (lambda () (display-line-numbers-mode -1)))
+  :custom
+  (codex-ide-enable-emacs-tool-bridge t)
+  :init
+  (map! :leader
+        :prefix "o"
+        :desc "Codex menu" "c" #'codex-ide-menu))
+#+end_src
+
+Submit Codex prompts with =RET=.
+#+begin_src emacs-lisp
+(after! codex-ide-session-mode
+  (dolist (map (list codex-ide-session-mode-map
+                     codex-ide-session-prompt-minor-mode-map))
+    (define-key map (kbd "RET") #'codex-ide-submit)
+    (define-key map (kbd "<return>") #'codex-ide-submit)))
+#+end_src
+
+Jump to the active prompt before inserting text.
+#+begin_src emacs-lisp
+(defun my/codex--goto-active-prompt ()
+  "Move point to the active Codex prompt, if one exists."
+  (when (derived-mode-p 'codex-ide-session-mode)
+    (when-let* ((session (or (bound-and-true-p codex-ide--session)
+                             (and (fboundp 'codex-ide--session-for-current-buffer)
+                                  (codex-ide--session-for-current-buffer))))
+                (input-end (and (fboundp 'codex-ide-session-mode--input-end-position)
+                                (codex-ide-session-mode--input-end-position session))))
+      (goto-char input-end))))
+
+(defun my/codex-self-insert (n)
+  "Insert text at the active Codex prompt, moving there first if needed."
+  (interactive "p")
+  (when (and (derived-mode-p 'codex-ide-session-mode)
+             (not (codex-ide--point-in-active-prompt-p)))
+    (my/codex--goto-active-prompt))
+  (self-insert-command n))
+
+(with-eval-after-load 'codex-ide-session-mode
+  (define-key codex-ide-session-mode-map [remap self-insert-command]
+              #'my/codex-self-insert))
+#+end_src
+
+Toggle a workspace-local Codex sidebar.
+#+begin_src emacs-lisp
+(defun my/codex--current-workspace-key ()
+  "Return a workspace-local key for Codex sidebar state."
+  (cond
+   ((fboundp '+workspace-current-name)
+    (+workspace-current-name))
+   ((fboundp 'safe-persp-name)
+    (safe-persp-name (get-current-persp)))
+   ((fboundp 'projectile-project-root)
+    (projectile-project-root))
+   ((fboundp 'codex-ide--get-working-directory)
+    (codex-ide--get-working-directory))
+   (t
+    default-directory)))
+
+(defun my/codex--sidebar-buffer-name ()
+  "Return the Codex sidebar buffer name for the current workspace."
+  (format "*doom:codex-popup:%s*" (my/codex--current-workspace-key)))
+
+(defun my/codex--sidebar-session-buffer ()
+  "Return a Codex session buffer for the current sidebar workspace."
+  (or (get-buffer (my/codex--sidebar-buffer-name))
+      (let* ((choice (completing-read
+                      "No Codex buffer. Action: "
+                      '("continue most recent" "search sessions" "start new")
+                      nil t nil nil "continue most recent"))
+             (session
+              (pcase choice
+                ("continue most recent"
+                 (codex-ide--start-session 'continue))
+                ("search sessions"
+                 (let* ((directory (codex-ide--get-working-directory))
+                        (query-session
+                         (codex-ide--ensure-query-session-for-thread-selection
+                          directory))
+                        (thread (codex-ide--pick-thread query-session)))
+                   (codex-ide--show-or-resume-thread
+                    (alist-get 'id thread)
+                    directory)))
+                (_
+                 (codex-ide--start-session 'new))))
+             (buffer (codex-ide-session-buffer session)))
+        (when (buffer-live-p buffer)
+          (with-current-buffer buffer
+            (rename-buffer (my/codex--sidebar-buffer-name) t)))
+        buffer)))
+
+(defun my/codex--restore-window-buffer (window buffer)
+  "Restore WINDOW to BUFFER when Codex session creation reused it."
+  (when (and (window-live-p window)
+             (buffer-live-p buffer)
+             (not (eq (window-buffer window) buffer)))
+    (set-window-buffer window buffer)))
+
+(defun my/codex-toggle-sidebar ()
+  "Toggle a workspace-local Codex session in a side window."
+  (interactive)
+  (require 'codex-ide-core)
+  (require 'codex-ide-session)
+  (let* ((buffer-name (my/codex--sidebar-buffer-name))
+         (window (get-buffer-window buffer-name t)))
+    (if (window-live-p window)
+        (delete-window window)
+      (let ((origin-window (selected-window))
+            (origin-buffer (current-buffer))
+            (codex-ide-select-window-on-open nil)
+            (display-buffer-overriding-action
+             `((display-buffer-reuse-window
+                display-buffer-in-side-window)
+               (side . right)
+               (slot . 0)
+               (window-width . ,my/llm-sidebar-width))))
+        (select-window
+         (display-buffer-in-side-window
+          (my/codex--sidebar-session-buffer)
+          `((side . right)
+            (slot . 0)
+            (window-width . ,my/llm-sidebar-width))))
+        (my/codex--restore-window-buffer origin-window origin-buffer)))))
+
+(map! :leader
+      :desc "Toggle Codex sidebar" "t a" #'my/codex-toggle-sidebar)
+#+end_src
+
 *** lsp +eglot
 By default =eglot-code-action-indicator= is set to a lightbulb emoji (💡) which
 annoyingly causes the line height to increase when hovering over certain things on macOS,

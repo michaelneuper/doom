@@ -30,7 +30,6 @@ of doom's =init.el=.
   - [[#term][:term]]
   - [[#tools][:tools]]
   - [[#lang][:lang]]
-  - [[#app][:app]]
 
 * Basic
 ** Defaults
@@ -161,18 +160,22 @@ Add some missing file icons to =nerd-fonts=.
     (add-to-list 'nerd-icons-extension-icon-alist entry)))
 #+end_src
 
-Make escape characters like =\n= orange when the =gruvbox= theme is used like in neovim.
+Make escape characters like =\n= orange like in neovim.
 #+begin_src emacs-lisp
 (custom-theme-set-faces! 'doom-gruvbox
   `(font-lock-escape-face :foreground ,(doom-color 'orange)))
 
 (custom-set-faces!
+  `(font-lock-constant-face :weight bold)
   `(font-lock-doc-face
-    :foreground ,(face-attribute 'font-lock-comment-face :foreground))
-  `(hexl-address-region :font ,my/mono-font)
-  `(hexl-ascii-region
-    :background ,(doom-color 'bg-alt)
-    :foreground ,(doom-color 'fg-alt)))
+    :foreground ,(face-attribute 'font-lock-comment-face :foreground)))
+
+(after! hexl-mode
+  (custom-set-faces!
+    `(hexl-address-region :font ,my/mono-font)
+    `(hexl-ascii-region
+      :background ,(doom-color 'bg-alt)
+      :foreground ,(doom-color 'fg-alt))))
 #+end_src
 *** Lines
 Enable relative line numbers and make their slant normal (not italic).
@@ -412,6 +415,7 @@ Only relevant if you have [[+roam2]].
 ;;        (subst-char-in-string ?_ ?  buffer-file-name))
 ;;     (funcall orig-fun)))
 #+end_src
+
 *** popup
 #+begin_src emacs-lisp
 (set-popup-rules!
@@ -544,9 +548,7 @@ Add padding to emacs frames and windows with [[https://github.com/protesilaos/sp
 
 Make rainbow delimiters toggleable.
 #+begin_src emacs-lisp
-(add-hook! '(emacs-lisp-mode-hook
-             c-mode-hook c-ts-mode-hook
-             java-mode-hook java-ts-mode-hook)
+(add-hook! (prog-mode conf-mode)
            #'rainbow-delimiters-mode)
 
 ;; https://github.com/orgs/doomemacs/projects/5/views/1?pane=issue&itemId=117610828
@@ -725,7 +727,7 @@ Ensure [[https://github.com/alexluigit/dirvish/blob/main/docs/CUSTOMIZING.org#in
          '(vc-state subtree-state nerd-icons collapse)
          '(git-msg file-size)))
 
-  (setq! dirvish-quick-access-entries my/favorite-dirs))
+  (setopt dirvish-quick-access-entries my/favorite-dirs))
 
 (map! :leader :desc "Dirvish Quick Access" "o q" #'dirvish-quick-access)
 #+end_src
@@ -1460,7 +1462,7 @@ Create some keybindings for commonly used commands.
         treesit-auto-install-grammar 'ask))
 #+end_src
 ** :lang
-*** cc
+*** cc +lsp +tree-sitter
 Configure =cc-mode=.
 #+begin_src emacs-lisp
 (after! (cc-mode c-ts-mode)
@@ -2014,8 +2016,7 @@ Set up =org-roam= along with keybindings that have the [[kbd:][<leader> r]] pref
   :config
   (setq c3-ts-mode-indent-offset 4)
   (set-eglot-client! '(c3-mode c3-ts-mode)
-                     (list (expand-file-name "~/Downloads/server/bin/release/c3lsp")))
-  )
+                     (list (expand-file-name "~/Downloads/server/bin/release/c3lsp"))))
 #+end_src
 **** arduino
 #+begin_src emacs-lisp :tangle packages.el
@@ -2046,110 +2047,4 @@ Set up =org-roam= along with keybindings that have the [[kbd:][<leader> r]] pref
     `(nasm-instructions :foreground ,(doom-color 'cyan))
     `(nasm-registers    :foreground ,(doom-color 'violet))
     `(nasm-local-labels :foreground ,(doom-color 'yellow))))
-#+end_src
-** :app
-*** calendar
-Use my forks of =calfw=, which is required for some of the configs here.
-#+begin_src emacs-lisp :tangle packages.el
-(unpin! calfw)
-
-(package! calfw :recipe
-  (:host github
-   :repo "kiwanami/emacs-calfw"
-   :fork (:repo "haji-ali/emacs-calfw"
-          :fork (:repo "michaelneuper/emacs-calfw"
-                 ;; FIXME fix branch not being checked out
-                 :branch "fix"))))
-
-(package! calfw-blocks :recipe
-  (:host github
-   :repo "haji-ali/calfw-blocks"
-   :fork (:repo "michaelneuper/calfw-blocks"
-          :branch "fix-dispatch-and-colors")))
-
-(package! maccalfw :recipe
-  (:host github
-   :repo "haji-ali/maccalfw"
-   :files ("maccalfw.el"
-           "ical-form.el"
-           ("src" . "src")))
-  :ignore (not (featurep :system 'macos)))
-#+end_src
-
-=calfw= displays holidays by default, let's turn that off.
-#+begin_src emacs-lisp
-(use-package! calfw
-  :init
-  (map! :leader
-        :prefix "o"
-        (:prefix ("c" . "calendar")
-         :desc "Default calendar" "d" #'cfw:open-calendar-buffer))
-  :config
-  (setq cfw:display-calendar-holidays nil)
-
-  (custom-set-faces!
-    `(cfw:face-toolbar :background ,(doom-color 'bg))))
-
-(use-package! calfw-blocks :after calfw)
-#+end_src
-
-Integrate with the mac calendar, requires using my forks of =calfw=.
-#+begin_src emacs-lisp
-(use-package! maccalfw
-  :if (featurep :system 'macos)
-  :after calfw-blocks
-  :commands (maccalfw-open
-             my/maccalfw-open-selective
-             my/maccalfw-open-assessments)
-  :init
-  ;; custom functions
-  (defun my/maccalfw-open-selective ()
-    "Open calfw with selected calendars."
-    (interactive)
-    (require 'maccalfw)
-    (maccalfw--load-module)
-    (let* ((all-calendars (maccalfw-get-calendars))
-           (calendar-names (mapcar
-                            (lambda (cal)
-                              (plist-get cal :title))
-                            all-calendars))
-           (selected-names (completing-read-multiple
-                            "Select calendars: "
-                            calendar-names))
-           (selected-calendars (seq-filter
-                                (lambda (cal)
-                                  (member (plist-get cal :title)
-                                          selected-names))
-                                all-calendars)))
-      (maccalfw-open
-       selected-calendars)))
-
-  (defun my/maccalfw-open-assessments ()
-    "Open calfw with the Assessments calendar in monthly view."
-    (interactive)
-    (require 'maccalfw)
-    (maccalfw--load-module)
-    (let* ((all-calendars (maccalfw-get-calendars))
-           (assessments-calendar (seq-find
-                                  (lambda (cal)
-                                    (string=
-                                     (plist-get cal :title)
-                                     "Assessments"))
-                                  all-calendars)))
-      (cfw:open-calendar-buffer
-       :view 'month
-       :contents-sources
-       (list (maccalfw--create-source
-              (plist-get assessments-calendar :title)
-              (plist-get assessments-calendar :id)
-              (doom-color 'red)))
-       :sorter (or (and (fboundp #'calfw-blocks-default-sorter)
-                        #'calfw-blocks-default-sorter)
-                   #'string-lessp))))
-  ;; keybindings
-  (map! :leader
-        :prefix "oc"
-        :desc "Assessment calendar" "a" #'my/maccalfw-open-assessments
-        :desc "Select calendar"     "s" #'my/maccalfw-open-selective
-        :desc "Mac calendar"        "m" #'maccalfw-open))
 #+end_src

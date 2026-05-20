@@ -1662,6 +1662,74 @@ By default, all =org= links are the same colour, lets change that.
       :underline nil)))
 #+end_src
 
+Open plain URLs inside source blocks instead of executing the block.
+#+begin_src emacs-lisp
+(defvar my/org-src-url-click-opened-until nil
+  "Time until which source block execution is suppressed after opening a URL.")
+
+(defun my/url-at-point-or-position (&optional pos)
+  "Return a plain URL at POS or point.
+This scans the current line explicitly, which is more reliable inside
+fontified Org source blocks than `thing-at-point'."
+  (let ((pos (or pos (point)))
+        found)
+    (save-excursion
+      (goto-char pos)
+      (save-restriction
+        (narrow-to-region (line-beginning-position) (line-end-position))
+        (goto-char (point-min))
+        (while (and (not found)
+                    (re-search-forward "\\_<https?://[^][(){}<>'\"[:space:]]+" nil t))
+          (when (<= (match-beginning 0) pos (match-end 0))
+            (setq found (match-string-no-properties 0))))))
+    found))
+
+(defadvice! my/org-babel-open-url-at-point-a (fn &rest args)
+  "Open plain URLs in Org source blocks instead of executing the block."
+  :around #'org-babel-execute-src-block
+  (cond
+   ((and my/org-src-url-click-opened-until
+         (time-less-p nil my/org-src-url-click-opened-until))
+    nil)
+   ((if-let* ((url (my/url-at-point-or-position))
+              ((memq (org-element-type (org-element-context))
+                     '(src-block inline-src-block))))
+        (progn
+          (browse-url url)
+          t)))
+   (t
+    (apply fn args))))
+
+(defun my/org-mouse-open-url-in-src-block-maybe (event)
+  "Open a clicked plain URL in an Org source block.
+Return non-nil when EVENT was handled."
+  (when (derived-mode-p 'org-mode)
+    (let ((pos (posn-point (event-start event))))
+      (when (integer-or-marker-p pos)
+        (save-excursion
+          (goto-char pos)
+          (when-let* ((url (my/url-at-point-or-position pos))
+                      ((memq (org-element-type (org-element-context))
+                             '(src-block inline-src-block))))
+            (browse-url url)
+            (setq my/org-src-url-click-opened-until
+                  (time-add nil 0.5))
+            t))))))
+
+(defadvice! my/org-mouse-drag-region-open-url-a (fn event &rest args)
+  "Open plain URLs in Org source blocks before mouse drag selection."
+  :around #'mouse-drag-region
+  (unless (my/org-mouse-open-url-in-src-block-maybe event)
+    (apply fn event args)))
+
+(after! evil
+  (defadvice! my/org-evil-mouse-drag-region-open-url-a (fn event &rest args)
+    "Open plain URLs in Org source blocks before Evil mouse drag selection."
+    :around #'evil-mouse-drag-region
+    (unless (my/org-mouse-open-url-in-src-block-maybe event)
+      (apply fn event args))))
+#+end_src
+
 I incorrectly tagged a bunch of org files, so this function fixes that.
 #+begin_src emacs-lisp
 (defun my/org-fix-filetags ()

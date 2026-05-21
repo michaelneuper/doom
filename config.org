@@ -139,7 +139,7 @@ The fonts need to be installed on your machine and make sure to run ~M-x nerd-ic
     (defconst my/sans-serif-font "Inter")
     (defconst my/mono-font "JetBrainsMono Nerd Font")))
 
-(setq doom-font (font-spec :family my/mono-font :size 15)
+(setq doom-font (font-spec :family my/mono-font :size 14.5)
       doom-variable-pitch-font (font-spec :family my/serif-font)
       doom-emoji-font (font-spec :family "Apple Color Emoji"))
 #+end_src
@@ -531,12 +531,12 @@ Add padding to emacs frames and windows with [[https://github.com/protesilaos/sp
   :ensure t
   :config
   (setq spacious-padding-widths
-        '( :internal-border-width 20
-           :header-line-width 8
-           :mode-line-width 8
-           :tab-width 4 ;; ?
-           :right-divider-width 15
-           :left-fringe-width 8))
+        '(:internal-border-width 15
+          :header-line-width 5
+          :mode-line-width 10
+          :tab-width 5 ;; ?
+          :right-divider-width 5
+          :fringe-width 5))
 
   (when (display-graphic-p)
     (spacious-padding-mode 1)))
@@ -571,7 +571,9 @@ Enable breadcrumbs.
   (custom-set-faces!
     `((breadcrumb-face breadcrumb-project-leaf-face)
       :family ,my/mono-font)
-    `((breadcrumb-project-base-face breadcrumb-project-leaf-face breadcrumb-project-crumbs-face)
+    `((breadcrumb-project-base-face
+       breadcrumb-project-leaf-face
+       breadcrumb-project-crumbs-face)
       :foreground ,(face-attribute 'font-lock-comment-face :foreground)
       :family ,my/mono-font)))
 #+end_src

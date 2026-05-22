@@ -955,71 +955,29 @@ so I use this environment variable to disable them when running inside vterm.
 **** ghostel
 #+begin_src emacs-lisp :tangle packages.el
 (package! ghostel)
-(package! evil-ghostel
-  :ignore (not (featurep 'evil)))
+(package! evil-ghostel)
 #+end_src
 
 #+begin_src emacs-lisp
 (use-package! ghostel
+  :defer t
   :hook (ghostel-mode . mode-line-invisible-mode)
   :init
-  (require 'ghostel-compile)
-  (ghostel-compile-global-mode 1)
+  (set-popup-rule! "^\\*doom:ghostel-popup:" :size 0.35 :vslot -4 :select t :quit nil :ttl nil)
 
-  (set-popup-rule! "^\\*doom:ghostel-popup:" :size 0.25 :vslot -4 :select t :quit nil :ttl 0)
-
-  (setq ghostel-module-auto-install 'download))
+  (setq ghostel-module-auto-install 'download)
+  :config
+  (ghostel-compile-global-mode 1))
 
 (use-package! evil-ghostel
-  :after (ghostel evil)
-  :if (featurep 'evil)
+  :after ghostel
   :hook (ghostel-mode . evil-ghostel-mode))
-#+end_src
-
-Fix nerd fonts being displayed too small.
-#+begin_src emacs-lisp
-(after! ghostel
-  (defun my/ghostel--display-without-height (display)
-    "Return DISPLAY without Ghostel's glyph-height clamp."
-    (cond
-     ((and (listp display)
-           (assq 'height display))
-      (delq nil
-            (mapcar (lambda (spec)
-                      (unless (eq (car-safe spec) 'height)
-                        spec))
-                    display)))
-     (t display)))
-
-  (defun my/ghostel--fix-nerd-icon-heights (&rest _)
-    "Remove Ghostel display-height clamps from Nerd Font private glyphs."
-    (when (derived-mode-p 'ghostel-mode)
-      (let ((inhibit-read-only t)
-            (end (point-max)))
-        (save-excursion
-          (goto-char (point-min))
-          (while (< (point) end)
-            (let ((ch (char-after))
-                  (display (get-text-property (point) 'display)))
-              (when (and ch display
-                         (or (and (>= ch #xe000) (<= ch #xf8ff))
-                             (and (>= ch #xf0000) (<= ch #xffffd))
-                             (and (>= ch #x100000) (<= ch #x10fffd))))
-                (let ((new-display (my/ghostel--display-without-height display)))
-                  (if new-display
-                      (put-text-property (point) (1+ (point))
-                                         'display new-display)
-                    (remove-text-properties
-                     (point) (1+ (point)) '(display nil))))))
-            (forward-char 1))))))
-
-  (advice-add #'ghostel--delayed-redraw
-              :after #'my/ghostel--fix-nerd-icon-heights)
-  (add-hook 'ghostel-mode-hook #'my/ghostel--fix-nerd-icon-heights))
 #+end_src
 
 Enable a ghostel popup similar to doom's =vterm= popup.
 #+begin_src emacs-lisp
+(defvar ghostel-buffer-name)
+
 (defun my/ghostel-toggle (arg)
   "Toggle a Ghostel popup window at project root.
 
@@ -1043,8 +1001,9 @@ project's root."
              (kill-buffer buffer))
            (when (window-live-p window)
              (delete-window window))))
-       (if-let* ((win (get-buffer-window buffer-name)))
+       (if-let* ((win (get-buffer-window buffer-name t)))
            (delete-window win)
+         (require 'ghostel)
          (let ((ghostel-buffer-name buffer-name))
            (ghostel)))
        (get-buffer buffer-name)))))
@@ -1058,6 +1017,7 @@ If prefix ARG is non-nil, cd into `default-directory' instead of project root."
    arg
    (lambda ()
      (let (display-buffer-alist)
+       (require 'ghostel)
        (ghostel)))))
 
 (defun my/ghostel--configure-project-root-and-display (arg display-fn)
@@ -1077,7 +1037,6 @@ If prefix ARG is non-nil, cd into `default-directory' instead of project root."
       :desc "Ghostel" "o T" #'my/ghostel-here)
 #+end_src
 
-#+end_src
 ** :tools
 *** debugger
 #+begin_src emacs-lisp

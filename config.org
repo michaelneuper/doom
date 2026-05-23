@@ -230,6 +230,7 @@ Format the title.
 ;; (setq frame-title-format '("" (:eval buffer-name) "%b"))
 (setq frame-title-format "GNU Emacs")
 #+end_src
+
 * Doom Modules
 ** :completion
 *** corfu
@@ -384,7 +385,7 @@ Make the modeline look a bit nicer.
     '(doom-modeline-buffer-file
       :weight normal)))
 
-  (map! :leader :desc "Mode line" "t m" #'global-hide-mode-line-mode))
+  (map! :leader :desc "Mode line" "t m" #'mode-line-invisible-mode))
 #+end_src
 
 We expect the file encoding to be =LF UTF-8= so, only display it in modeline when it's something else.

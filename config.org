@@ -12,7 +12,7 @@ of doom's =init.el=.
 - Each second-level heading  corresponds to an individual module within that category
   (e.g., [[#org][org]], [[#modeline][modeline]]).
 - Each third-level heading represents any flags applied to that module
-  (e.g., [[#+pretty][+pretty]], [[#+roam2][+roam2]]), which alter the module’s behavior or dependencies.
+  (e.g., [[#+pretty][+pretty]], [[#+roam2][+roam]]), which alter the module’s behavior or dependencies.
 - Subsequent headings:
   + Core packages enabled by those flags (e.g., [[#org-modern][org-modern]])
   + Manually installed packages related to that module (e.g., org-modern-indent)
@@ -33,10 +33,10 @@ of doom's =init.el=.
 
 * Basic
 ** Defaults
-*** Speed
+*** Header
 Make this file run slightly faster (see [[https://nullprogram.com/blog/2016/12/22/][this blog post]]).
 #+begin_src emacs-lisp
-;;; config.el -*- lexical-binding: t; -*-
+;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 #+end_src
 
 #+begin_src emacs-lisp :tangle packages.el
@@ -44,36 +44,22 @@ Make this file run slightly faster (see [[https://nullprogram.com/blog/2016/12/2
 ;;; $DOOMDIR/packages.el
 #+end_src
 
-Make emacs faster.
-#+begin_src emacs-lisp
-(use-package! gcmh
-  :defer nil
-  :init
-  (setq gcmh-idle-delay 5
-        gcmh-high-cons-threshold (* 256 1024 1024))  ; 256MB during idle
-  :config
-  (gcmh-mode 1))
+#+begin_src emacs-lisp :tangle doctor.el
+;; -*- no-byte-compile: t; -*-
+;;; $DOOMDIR/doctor.el
 #+end_src
 
 *** Basic
 #+begin_src emacs-lisp
-;; credentials
-(setq user-full-name "Michael Neuper"
-      user-mail-address "michael@michaelneuper.com")
+(setq! user-full-name "Michael Neuper"
+       user-mail-address "michael@michaelneuper.com"
+       auto-save-default t
+       make-backup-files t
+       confirm-kill-emacs nil
+       auto-revert-avoid-polling t ;; refresh buffers when files change on disk
+       doom-localleader-key "SPC l" ;; remap <localleader> from SPC m to SPC l
+       doom-localleader-alt-key "M-SPC l")
 
-;; autosave and backup
-(setq auto-save-default t
-      make-backup-files t)
-
-;; refresh buffers when files change on disk
-(setq auto-revert-avoid-polling t)
-
-;; kill emacs without confiming
-(setq confirm-kill-emacs nil)
-
-;; remap <localleader> from SPC m to SPC l
-(setq doom-localleader-key "SPC l"
-      doom-localleader-alt-key "M-SPC l")
 #+end_src
 
 Some useful keybindings for the minbuffer.
@@ -244,7 +230,7 @@ Disable corfu's auto-popups and preselect the first candidate.
 #+end_src
 ** :ui
 *** deft
-Quickly search and filter through [[+roam2]] notes.
+Quickly search and filter through [[+roam]] notes.
 #+begin_src emacs-lisp
 (use-package! deft
   :commands deft
@@ -352,8 +338,6 @@ Make the modeline look a bit nicer.
         doom-modeline-modal nil
         doom-modeline-spc-face-overrides `(:family ,my/mono-font))
 
-  (setq mode-line-right-align-edge 'right-fringe)
-
   ;; see https://discourse.doomemacs.org/t/how-to-switch-customize-or-write-themes/37#tweak-the-current-theme-3
   (custom-set-faces!
     `(doom-modeline-buffer-file
@@ -403,7 +387,7 @@ We expect the file encoding to be =LF UTF-8= so, only display it in modeline whe
 #+end_src
 
 Change the filename showed in the modline in an =org-roam= buffer to be =(<date>) <name>.org=.
-Only relevant if you have [[+roam2]].
+Only relevant if you have [[+roam]].
 #+begin_src emacs-lisp :tangle no
 ;; TODO show the name of the note instead of the name of the file
 ;; modified from https://tecosaur.github.io/emacs-config/config.html#modeline-file-name
@@ -455,7 +439,7 @@ Disable tabs by default and make them toggleable.
 *** zen
 Use =doom-variable-pitch-font= in the following modes:
 - =org-mode=
-- =org-roam-mode= (only relevant if you have [[+roam2]])
+- =org-roam-mode= (only relevant if you have [[+roam]])
 - =doom-docs-org-mode=
 #+begin_src emacs-lisp
 ;; modified from https://discourse.doomemacs.org/t/cant-size-doom-variable-pitch-font/4572/2
@@ -590,7 +574,6 @@ Set some =evil= variables and define some keybindings.
         evil-respect-visual-line-mode t
         evil-want-fine-undo t
         evil-move-beyond-eol t
-        ;; evil-want-minibuffer t        ; enable `evil-mode' in the minibuffer
         +evil-want-o/O-to-continue-comments nil)
 
   (map! :nv "~" #'repeat
@@ -1433,12 +1416,6 @@ Configure =cc-mode=.
                               (c-ts-mode . doxygen))
         whitespace-style '(face trailing lines-tail empty)))
 
-(after! eglot
-  (if (and (featurep :system 'macos) (file-executable-p "/opt/homebrew/opt/llvm/bin/clangd"))
-      (add-to-list 'eglot-server-programs
-                   '((c-mode c++-mode cc-mode c-ts-mode)
-                     . ("/opt/homebrew/opt/llvm/bin/clangd" "-j=3" "--clang-tidy")))))
-
 (add-hook! '(c-mode-hook c-ts-mode-hook)
   (unless (or (file-exists-p "makefile")
               (file-exists-p "Makefile"))
@@ -1454,14 +1431,11 @@ Fix issue where two new lines are inserted after ={=.
       (remove-hook 'post-self-insert-hook #'eglot--post-self-insert-hook t))))
 #+end_src
 
-Enable =yaml-ts-mode= in =.clang-format= files.
+Enable =yaml-mode= in =.clang-format= files.
 #+begin_src emacs-lisp
-(add-to-list 'auto-mode-alist
-             (cons "\\.clang-format\\'"
-                   (if (modulep! :lang yaml +tree-sitter)
-                       'yaml-ts-mode
-                     'yaml-mode)))
+(add-to-list 'auto-mode-alist (cons "\\.clang-format\\'" 'yaml-mode))
 #+end_src
+
 *** java
 Set indentation level for =java-mode= to 2.
 #+begin_src emacs-lisp
@@ -1921,7 +1895,7 @@ Customise drag-and-drop support for images and files, insert them into the =imag
         org-download-heading-lvl nil))
 
 #+end_src
-**** +roam2
+**** +roam
 Set up =org-roam= along with keybindings that have the [[kbd:][<leader> r]] prefix.
 #+begin_src emacs-lisp
 (remove-hook 'org-load-hook #'+org-init-roam-h)

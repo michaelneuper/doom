@@ -582,18 +582,23 @@ Set some =evil= variables and define some keybindings.
         :nv "Y" #'+evil:yank-unindented))
 #+end_src
 
-Make the cursor blue when the theme is gruvbox.
+Make the cursor blue, like in zed.
 #+begin_src emacs-lisp
-(after! evil
-  (when (eq doom-theme 'doom-gruvbox)
-    ;; this needs to be defined as a constant since evil gets loaded before doom-color
-    (defconst my/gruvbox-blue "#83a598") ; (doom-color 'blue)
+(defun my/set-evil-cursors-h ()
+  (let ((curs-color (doom-color 'blue)))
+    (setq evil-normal-state-cursor   `(box ,curs-color)
+          evil-insert-state-cursor   `(bar ,curs-color)
+          evil-visual-state-cursor   `(hollow ,curs-color)
+          evil-replace-state-cursor  `(hbar ,curs-color)
+          evil-operator-state-cursor `(evil-half-cursor ,curs-color)))
 
-    (setq evil-normal-state-cursor  `(box    ,my/gruvbox-blue)
-          evil-insert-state-cursor  `(bar    ,my/gruvbox-blue)
-          evil-visual-state-cursor  `(hollow ,my/gruvbox-blue)
-          evil-replace-state-cursor `(hbar   ,my/gruvbox-blue))))
+  (when (fboundp 'evil-refresh-cursor)
+    (evil-refresh-cursor)))
+
+(add-hook! '(doom-load-theme-hook doom-after-modules-config-hook)
+           #'my/set-evil-cursors-h)
 #+end_src
+
 *** format
 #+begin_src emacs-lisp
 (map! :map apheleia-mode-map

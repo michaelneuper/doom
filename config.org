@@ -242,19 +242,18 @@ Quickly search and filter through [[+roam]] notes.
 
   (map! :leader :desc "Search with deft" "r s" #'deft))
 #+end_src
-*** doom-dashboard
+*** dashboard
 #+ATTR_ORG: :width 350
 [[https://raw.githubusercontent.com/michaelneuper/doom/main/images/dashboard.png]]
 
-Remove the shortmenu and footer from the dashboard.
+Remove the shortmenu from the dashboard and loaded text.
 #+begin_src emacs-lisp
-(remove-hook! '+doom-dashboard-functions
-  #'doom-dashboard-widget-shortmenu
-  #'doom-dashboard-widget-footer)
+(remove-hook! '+dashboard-functions
+  #'+dashboard-widget-shortmenu
+  #'+dashboard-widget-loaded) ;; "Doom loaded x packages" text
 #+end_src
 
 Add a random custom message along with the emacs icon in the footer like the [[https://github.com/emacs-dashboard/emacs-dashboard][dashboard]] package.
-Also disable [[modeline]] and cursor.
 #+begin_src emacs-lisp
 ;; copied from https://github.com/emacs-dashboard/emacs-dashboard/blob/master/dashboard-widgets.el
 (defcustom my/dashboard-footer-messages
@@ -268,19 +267,47 @@ Also disable [[modeline]] and cursor.
     "I showed you my source code, pls respond")
   "A list of messages, one of which dashboard chooses to display.")
 
-(add-hook! '+doom-dashboard-functions :append
+(defun my/dashboard-widget-footer ()
+  "Draw a random custom dashboard footer message."
   (let* ((icon (propertize
                 #(" " 0 1 (display (height 1.5)))
                 'face `(:foreground ,(doom-color 'magenta))))
          (msg  (nth (random (length my/dashboard-footer-messages))
                     my/dashboard-footer-messages))
          (line (concat icon msg)))
-    (insert "\n" (+doom-dashboard--center +doom-dashboard--width line) "\n"))
+    (+dashboard-insert
+     (propertize " " 'display '(space . (:relative-height 2.0)))
+     line
+     (propertize " " 'display '(space . (:relative-height 0.75))))))
 
-      (setq mode-line-format nil))
+(setq +dashboard-functions
+      (let (result inserted)
+        (dolist (fn +dashboard-functions)
+          (unless (memq fn '(+dashboard-widget-shortmenu
+                             +dashboard-widget-footer
+                             my/dashboard-widget-footer))
+            (when (and (not inserted)
+                       (eq fn #'+dashboard-widget-loaded))
+              (push #'my/dashboard-widget-footer result)
+              (setq inserted t))
+            (push fn result)))
+        (unless inserted
+          (push #'my/dashboard-widget-footer result))
+        (nreverse result)))
+#+end_src
 
-(setq-hook! '+doom-dashboard-mode-hook
-   evil-normal-state-cursor (list nil))
+Disable [[modeline]] and cursor on the dashboard.
+#+begin_src emacs-lisp
+(add-hook! '+dashboard-mode-hook
+  (when (fboundp 'doom-modeline-auto-set-modeline)
+    (doom-modeline-auto-set-modeline))
+  (mode-line-invisible-mode +1)
+  (setq-local evil-normal-state-cursor '(nil)))
+
+(after! doom-modeline
+  (setq doom-modeline-mode-alist
+        (assq-delete-all 'dashboard-mode
+          (assq-delete-all '+dashboard-mode doom-modeline-mode-alist))))
 #+end_src
 
 Set a custom ascii banner for when emacs is used in the terminal, and a splash image for GUI mode.
@@ -298,18 +325,11 @@ Set a custom ascii banner for when emacs is used in the terminal, and a splash i
                    "⢸⠸⣀⠈⣯⢳⡘⣇⠀⠀⠈⡂⣜⣆⡀⠀⠀⢀⣀⡴⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢽⣆⣀⠀⠀⠀⣀⣜⠕⡊⠀⣸⠇⣼⡟⢠⠏⠀⡇"
                    "⢸⠀⡟⠀⢸⡆⢹⡜⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠋⣾⡏⡇⡎⡇⠀⡇"
                    "⢸⠀⢃⡆⠀⢿⡄⠑⢽⣄⠀⠀⠀⢀⠂⠠⢁⠈⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠄⡐⢀⠂⠀⠀⣠⣮⡟⢹⣯⣸⣱⠁⠀⡇"
-                   "⠈⠉⠉⠉⠉⠉⠉⠉⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠉⠉⠉⠉⠉⠉⠉⠁"))
-         (longest-line (apply #'max (mapcar #'length banner))))
-    (put-text-property
-     (point)
-     (dolist (line banner (point))
-       (insert (+doom-dashboard--center
-                +doom-dashboard--width
-                (concat line (make-string (max 0 (- longest-line (length line))) 32)))
-               "\n"))
-     'face 'doom-dashboard-banner)))
+                   "⠈⠉⠉⠉⠉⠉⠉⠉⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠉⠉⠉⠉⠉⠉⠉⠁")))
+    (propertize (mapconcat #'identity banner "\n")
+                'face '+dashboard-banner)))
 
-(setq +doom-dashboard-ascii-banner-fn #'my-weebery-is-always-greater
+(setq +dashboard-ascii-banner-fn #'my-weebery-is-always-greater
       fancy-splash-image (file-name-concat doom-private-dir "images/logo.svg"))
 #+end_src
 *** indent-guides

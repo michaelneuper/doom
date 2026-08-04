@@ -68,7 +68,7 @@
        ;;shell             ; simple shell REPL for Emacs
        ;;term              ; basic terminal emulator for Emacs
        vterm             ; the best terminal emulation in Emacs
-       ;;ghostel           ; the best terminal emulation in Emacs
+       (ghostel +everywhere) ; the best terminal emulation in Emacs
 
        :checkers
        (syntax +flymake +icons) ; tasing you for every semicolon you forget

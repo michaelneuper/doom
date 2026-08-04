@@ -88,8 +88,8 @@
        (lookup +docsets) ; navigate your code and its documentation
        llm               ; when I said you needed friends, I didn't mean...
        (lsp +eglot +booster)        ; M-x vscode
-       magit             ; a git porcelain for Emacs
        ;;make              ; run make tasks from Emacs
+       (magit +forge)             ; a git porcelain for Emacs
        ;;pass              ; password manager for nerds
        pdf               ; pdf enhancements
        ;;terraform         ; infrastructure as code

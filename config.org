@@ -1382,14 +1382,174 @@ Also disable inlay hints.
         :desc "Toggle inlay hints" "t h" #'eglot-inlay-hints-mode))
 #+end_src
 *** magit
+**** magit
 Add icons to =magit= and make the commit summary bold.
 #+begin_src emacs-lisp
+;; REVIEW https://github.com/magit/magit/issues/2942
 (after! magit
   (setopt magit-format-file-function #'magit-format-file-nerd-icons)
+
+  (setq auth-sources '("~/.authinfo")) ;; FIXME not using apple keychain
+
+  (with-eval-after-load 'magit
+    (setq magit-revision-show-gravatars '("^Author:     " . "^Commit:     ")))
 
   (custom-set-faces!
     '(git-commit-summary :weight bold)))
 #+end_src
+
+Highlight conventional commit prefixes in magit log and revision buffers,
+with separate faces for types, scopes, and breaking-change markers.
+#+begin_src emacs-lisp
+;; REVIEW: remove when https://github.com/magit/magit/issues/4027 is in doom's version of magit
+(defface my/magit-conventional-commit-default-face
+  '((t (:inherit font-lock-comment-face :weight bold)))
+  "Default face for conventional commit keywords.")
+
+(defface my/magit-conventional-commit-scope-face
+  '((t (:inherit (default my/magit-conventional-commit-default-face)
+        :weight bold)))
+  "Face for conventional commit scopes.")
+
+(defface my/magit-conventional-commit-feat-face
+  '((t (:inherit (success my/magit-conventional-commit-default-face))))
+  "Face for `feat' conventional commits.")
+
+(defface my/magit-conventional-commit-fix-face
+  '((t (:inherit (error my/magit-conventional-commit-default-face))))
+  "Face for `fix' and breaking conventional commits.")
+
+(defface my/magit-conventional-commit-revert-face
+  '((t (:inherit (error my/magit-conventional-commit-default-face))))
+  "Face for `revert' conventional commits.")
+
+(defface my/magit-conventional-commit-docs-face
+  '((t (:inherit my/magit-conventional-commit-default-face)))
+  "Face for `docs' conventional commits.")
+
+(defface my/magit-conventional-commit-style-face
+  '((t (:inherit my/magit-conventional-commit-default-face)))
+  "Face for `style' conventional commits.")
+
+(defface my/magit-conventional-commit-refactor-face
+  '((t (:inherit my/magit-conventional-commit-default-face)))
+  "Face for `refactor' conventional commits.")
+
+(defface my/magit-conventional-commit-perf-face
+  '((t (:inherit my/magit-conventional-commit-default-face)))
+  "Face for `perf' conventional commits.")
+
+(defface my/magit-conventional-commit-test-face
+  '((t (:inherit my/magit-conventional-commit-default-face)))
+  "Face for `test' conventional commits.")
+
+(defface my/magit-conventional-commit-build-face
+  '((t (:inherit my/magit-conventional-commit-default-face)))
+  "Face for `build' conventional commits.")
+
+(defface my/magit-conventional-commit-ci-face
+  '((t (:inherit my/magit-conventional-commit-default-face)))
+  "Face for `ci' conventional commits.")
+
+(defface my/magit-conventional-commit-chore-face
+  '((t (:inherit my/magit-conventional-commit-default-face)))
+  "Face for `chore' conventional commits.")
+
+(defconst my/magit-conventional-commit-keywords
+  '(("feat"     . my/magit-conventional-commit-feat-face)
+    ("fix"      . my/magit-conventional-commit-fix-face)
+    ("docs"     . my/magit-conventional-commit-docs-face)
+    ("style"    . my/magit-conventional-commit-style-face)
+    ("refactor" . my/magit-conventional-commit-refactor-face)
+    ("perf"     . my/magit-conventional-commit-perf-face)
+    ("test"     . my/magit-conventional-commit-test-face)
+    ("build"    . my/magit-conventional-commit-build-face)
+    ("ci"       . my/magit-conventional-commit-ci-face)
+    ("chore"    . my/magit-conventional-commit-chore-face)
+    ("revert"   . my/magit-conventional-commit-revert-face))
+  "Faces for conventional commit types.")
+
+(defun my/magit-conventional-commit-face (type breaking-p)
+  "Return the face for TYPE, forcing red when BREAKING-P is non-nil."
+  (if breaking-p
+      'my/magit-conventional-commit-fix-face
+    (or (cdr (assoc-string type my/magit-conventional-commit-keywords t))
+        'my/magit-conventional-commit-default-face)))
+
+(defun my/magit-highlight-conventional-commit-keywords ()
+  "Highlight conventional commit keywords in magit summary buffers."
+  (save-excursion
+    (goto-char (point-min))
+    (let ((limit (line-end-position)))
+      (while (re-search-forward
+              "^\\([[:space:]]*\\)\\([[:alpha:]][[:alnum:]-]*\\)\\(?:\\(!\\)\\)?\\(?:\\(([^)]*)\\)\\)?\\(?:\\(!\\)\\)?\\(:\\)"
+              limit t)
+        (let* ((type-group 2)
+               (bang-before-scope-group 3)
+               (scope-group 4)
+               (bang-after-scope-group 5)
+               (colon-group 6)
+               (type (match-string-no-properties type-group))
+               (breaking-p (or (match-beginning bang-before-scope-group)
+                               (match-beginning bang-after-scope-group)))
+               (face (my/magit-conventional-commit-face type breaking-p)))
+          (put-text-property (match-beginning type-group) (match-end type-group)
+                             'font-lock-face face)
+          (when (match-beginning bang-before-scope-group)
+            (put-text-property (match-beginning bang-before-scope-group)
+                               (match-end bang-before-scope-group)
+                               'font-lock-face face))
+          (when (match-beginning scope-group)
+            (put-text-property (match-beginning scope-group) (match-end scope-group)
+                               'font-lock-face (if breaking-p
+                                                   face
+                                                 'my/magit-conventional-commit-scope-face)))
+          (when (match-beginning bang-after-scope-group)
+            (put-text-property (match-beginning bang-after-scope-group)
+                               (match-end bang-after-scope-group)
+                               'font-lock-face face))
+          (put-text-property (match-beginning colon-group) (match-end colon-group)
+                             'font-lock-face 'default))))))
+
+(add-hook! '(magit-log-wash-summary-hook
+             magit-revision-wash-message-hook)
+           :append #'my/magit-highlight-conventional-commit-keywords)
+#+end_src
+
+**** magit-prime
+Speed up magit.
+#+begin_src emacs-lisp :tangle packages.el
+(when (modulep! :tools magit)
+  (package! magit-prime))
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package! magit-prime
+  :when (modulep! :tools magit)
+  :hook (magit-mode . magit-prime-mode))
+#+end_src
+
+**** magit-todos
+Display TODOs in magit buffer.
+#+begin_src emacs-lisp :tangle packages.el
+(when (modulep! :tools magit)
+  (package! magit-todos))
+#+end_src
+
+Change the suffix regex to make the =:= and the end of the keyword optional.
+So this regex should match:
+- =TODO bar=
+- =TODO: bar=
+- =TODO(foo): bar=
+- =TODO[foo]: bar=
+#+begin_src emacs-lisp
+(use-package! magit-todos
+  :when (modulep! :tools magit)
+  :hook (magit-status-mode . magit-todos-mode)
+  :config
+  (setq magit-todos-keyword-suffix "\\(?::\\|\\(?:[([][^])]+[])]\\)?\\|:\\)?"))
+#+end_src
+
 *** pdf
 Automatically enable dark mode in pdfs.
 #+begin_src emacs-lisp
